@@ -92,7 +92,15 @@ Credits:
 
 Hauptmenü:
 ===================  
-![img](https://us.v-cdn.net/6025034/uploads/editor/t4/xrwomsb0zpaq.png)
+![img](https://github.com/rols1/PluginPictures/blob/master/ARDundZDF/Hauptmenue.png)
+
+ARD_Menü:
+===================  
+![img](https://github.com/rols1/PluginPictures/blob/master/ARDundZDF/ARD_Menue.png)
+
+ARD_Menue_Waehlen_Sie_Ihren_Sender:
+===================  
+![img](https://github.com/rols1/PluginPictures/blob/master/ARDundZDF/Menue_Waehlen_Sie_Ihren_Sender.png)
 
 Suche in ZDF Mediathek:
 ===================  
@@ -105,6 +113,10 @@ Videoformate ZDF Mediathek:
 TV Livesender Vorauswahl:
 ===================  
 ![img](https://us.v-cdn.net/6025034/uploads/editor/i5/vo1g066f7n9n.jpg)
+
+Radio Livestreams Vorauswahl:
+===================  
+![img](https://github.com/rols1/PluginPictures/blob/master/ARDundZDF/Radio-Livestreams-Vorauswahl.png)
 
 Radio Livesender:
 ===================  
