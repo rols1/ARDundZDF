@@ -1,0 +1,42 @@
+CHANGE HISTORY 	ARDundZDF - inoffizielles Plugin für den Plexmediaserver
+--------------		Releases: https://github.com/rols1/ARDundZDF/releases/latest
+--------------		Nachfolger von Plex-Plugin-ARDMediathek2016
+--------------	
+
+17.09.2018	0.2.0	PREFIXe in Modulen angepasst: zdfmobile,Pod_content, update_single.
+			ARDStart: Titel-Auswertung erweitert, Livestream-Erkennung verbessert.
+			Anpassungen für PHT (Leerparameter): ARDStartSingle,   	
+not on github	0.1.9	Podcasts: Anpassungen ARDMore (jetzt PODMore), Anpassung Main_POD.	
+not on github	0.1.8	ARDStart, ARDStartRubrik, ARDStartSingle: interne Markierung von Livestreams mittels
+			ID geändert (Titel und json-Inhalte nicht eindeutig).	
+not on github	0.1.7	ARDStart und ARDStartRubrik: Auswertung der Higlights (Wischercontainer am Anfang).	
+not on github	0.1.6	ARDStartVideoMP4: Behandlung der MP4-Formate.
+			Erstellung von Downloadliste + Downloadbuttons (test_downloads).
+not on github	0.1.5	ARDStartVideoStreams: Behandlung der m3u8-Url's (Streaming), einschl. Auflistung 
+			der einzelnen Auflösungen.
+not on github	0.1.4	ARDStartSingle: Erkennung Livestream-Seite + Abzweig zu SenderLiveResolution.
+not on github	0.1.3	ARDStartSingle: Auswertung Geoblock-Hinweis, Abfangen fehlender Videoquellen.	
+not on github	0.1.2	ARDStartSingle: Auswertung der Videoquellen, Aufteilung Stream- + MP4-Formate. 	
+not on github	0.1.1	ARDStartSingle: Wiedergabe eines Videos aus ARDStart - Analyse der json-Daten
+			(APOLLO_STATE, PRELOADED_STATE, s. Archiv/ARDundZDF).	
+not on github	0.1.0	ARDStartRubrik: Wechsel zum img als eindeutige Referenz (title nicht geeignet).
+not on github	0.0.9	ARDStartRubrik: Auflistung einer Rubrik aus ARDStart.	
+not on github	0.0.8	ARDStart (Startseite), Berücksichtigung des ausgewählten Senders.
+not on github	0.0.7	Anpassung VerpasstWoche (bisher nicht in beta.ardmediathek unterstützt, Verwendung kanal statt
+			sender).
+not on github	0.0.6	Einführung Dict['ARDSender'] für globale Verwendung aus Senderwahl. Ausstattung ObjectContainer 
+			in nutzenden Funktionen mit "no_cache=True" (für lokale sofortige Nutzung erforderlich). 
+not on github	0.0.5	Neuordnung ARD-Menü, Entfernung Untermenüs einschl. Code (Filme, Dokus, Themen usw.),
+			zunächst beibehalten: Barrieream, Bilderserien, alte Suchfunktion.
+			Neues Senderlogo für Radio Bremen. 	
+not on github	0.0.4	Neukodierung Senderwahl (vorher Kanalwahl), globale Liste ARDSender (Name, Pfadname, Kanal, Icon).	
+not on github	0.0.3	Anpassung SendungenAZ (Pfade, Auswertung inaktive Buchstaben)	
+not on github	0.0.2	neue Funktionen: SendungenAZ_ARDnew, ARDnew_Content, ARDnew_Sendungen, ARDnew_SingleSendung	
+not on github	0.0.1	Plugincopy von ARDMediathek2016 -> ARDundZDF.
+			Anpassung NAME + PREFIX in init.py  + Info.plist
+06.09.2018		Sichtung Betaversion https://beta.ardmediathek.de/ard/
+			Sichtung Pressebeiträge + Terminplanung. Laut ARD Start der finalen
+			Version ab Herbst 2018.
+			Ziel laut ARD: einheitlicher Zugriff auf die Inhalte aller Landesanstalten
+			und Unterstützung unterschiedlicher Endgeräte und Plattformen.
+			

@@ -1,0 +1,289 @@
+<channels>
+ <channels_info>
+  <title>Deutsche Sender</title>
+  <genre>TV</genre>
+  <description>Livestreams http://www.ardmediathek.de/tv/live</description>
+  <thumbnail></thumbnail>
+   <date>24.01.2018 rols1</date>
+  <credits>Grafiken @Arauco (Plex-Forum)</credits>
+ </channels_info>
+ 
+<channel>
+<name>Überregional</name>
+<thumbnail>tv-ueberregional.png</thumbnail>
+<epg></epg>
+<items>
+	<item>
+		<title>Das Erste</title>
+		<link>https://daserstehdde-lh.akamaihd.net/i/daserstehd_de@629196/master.m3u8</link>
+		<thumbnail>tv-das-erste.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>ARD</EPG_ID>
+		<date>07.09.2018</date>
+		<epg_url></epg_url>
+	</item>
+	<item>
+		<title>ZDF</title>
+		<link>http://zdf1314-lh.akamaihd.net/i/de14_v1@392878/master.m3u8</link>
+		<thumbnail>tv-zdf.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>ZDF</EPG_ID>
+		<date>11.06.2016</date>
+		<epg_url></epg_url>
+		<geoblock>ja</geoblock>
+	</item>
+	<item>
+		<title>KiKA</title>
+		<link>https://kikade-lh.akamaihd.net/i/livetvkika_de@450035/master.m3u8</link>
+		<thumbnail>tv-kika.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>KIKA</EPG_ID>
+		<date>07.09.2018</date>
+		<epg_url></epg_url>
+		<geoblock>ja</geoblock>
+	</item>
+	<item>
+		<title>Arte deutsch</title>
+		<link>https://artelive-lh.akamaihd.net/i/artelive_de@393591/master.m3u8</link>
+		<link1>LiveTV_Arte.m3u8</link1>link1>
+		<info>Web: http://www.ardmediathek.de/tv/live?kanal=5880</info>
+		<thumbnail>tv-arte.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>ARTE</EPG_ID>
+		<date>07.09.2018</date>
+		<epg_url></epg_url>
+		<geoblock>ja</geoblock>
+	</item>
+	<item>
+		<title>ONE</title>
+		<link>http://onelivestream-lh.akamaihd.net/i/one_livestream@568814/master.m3u8</link>
+		<thumbnail>tv-one.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>fes</EPG_ID>
+		<date>07.09.2018</date>
+		<epg_url></epg_url>
+	</item>
+	<item>
+		<title>3sat</title>
+		<link>http://zdf0910-lh.akamaihd.net/i/dach10_v1@392872/master.m3u8</link>
+		<thumbnail>tv-3sat.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>3SAT</EPG_ID>
+		<date>07.09.2018</date>
+		<epg_url></epg_url>
+		<geoblock>ja</geoblock>
+	</item>
+	<item>			
+		<title>ZDFneo</title>
+		<link>http://zdf1314-lh.akamaihd.net/i/de13_v1@392877/master.m3u8</link>
+		<thumbnail>tv-zdf-neo.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>2NEO</EPG_ID>
+		<date>11.06.2016</date>
+		<epg_url></epg_url>
+		<geoblock>ja</geoblock>
+	</item>
+	<item>			
+		<title>ZDFinfo</title>
+		<link>http://zdf1112-lh.akamaihd.net/i/de12_v1@392882/master.m3u8</link>
+		<thumbnail>tv-zdf-info.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>ZINFO</EPG_ID>
+		<date>11.06.2016</date>
+		<epg_url></epg_url>
+		<geoblock>ja</geoblock>
+	</item>
+	<item>
+		<title>ARD-alpha</title>
+		<link>https://brlive-lh.akamaihd.net/i/bralpha_germany@119899/master.m3u8</link>
+		<thumbnail>tv-alpha.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>ALPHA</EPG_ID>
+		<date>07.09.2018</date>
+		<epg_url></epg_url>
+	</item>
+	<item>
+		<title>phoenix</title>
+		<link>http://zdf0910-lh.akamaihd.net/i/de09_v1@392871/master.m3u8</link>
+		<thumbnail>tv-phoenix.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>PHOEN</EPG_ID>
+		<date>07.09.2018</date>
+		<epg_url></epg_url>
+		<geoblock>ja</geoblock>
+	</item>
+	<item>
+		<title>Tagesschau24-Livestream</title>
+		<link>http://tagesschau-lh.akamaihd.net/i/tagesschau_1@119231/master.m3u8</link>
+		<thumbnail>tv-tagesschau.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>TAG24</EPG_ID>
+		<date>07.09.2018</date>
+		<epg_url></epg_url>
+	</item>
+	<item>
+		<title>Deutsche Welle</title>
+		<link>http://dwstream6-lh.akamaihd.net/i/dwstream6_live@124409/master.m3u8</link>
+		<thumbnail>tv-deutsche-welle.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>DWTV</EPG_ID>
+		<date>19.06.2016</date>
+		<epg_url></epg_url>
+	</item>
+</items>
+</channel>
+
+<channel>
+<name>Regional</name>
+<thumbnail>tv-regional.png</thumbnail>
+<epg>http://www.zdf.de/epg/programm-4100.html</epg>
+<items>
+	<item>
+		<title>BR Fernsehen-Süd</title>
+		<link>https://brlive-lh.akamaihd.net/i/bfssued_germany@119890/master.m3u8</link>
+		<thumbnail>tv-br.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>BR</EPG_ID>
+		<date>07.09.2018</date>
+		<epg_url></epg_url>
+	</item>
+	<item>
+		<title>hr-fernsehen</title>
+		<link>https://hrlive1-lh.akamaihd.net/i/hr_fernsehen@75910/master.m3u8</link>		  
+		<thumbnail>tv-hr.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>HR</EPG_ID>
+		<date>07.09.2018</date>
+		<epg_url></epg_url>
+	</item>
+	<item>
+		<title>MDR Sachsen</title>
+		<link>https://mdrsnhls-lh.akamaihd.net/i/livetvmdrsachsen_de@513998/master.m3u8</link>
+		<thumbnail>tv-mdr-sachsen.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>MDR</EPG_ID>
+		<date>07.09.2018</date>
+		<epg_url></epg_url>
+	</item>
+	<item>
+		<title>Radio Bremen</title>
+		<link>https://rbfs-lh.akamaihd.net/i/rb_fs@438960/master.m3u8</link>
+		<thumbnail>tv-ndr-hamburg.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>N3</EPG_ID>
+		<date>07.09.2018</date>
+		<epg_url></epg_url>
+	</item>
+	<item>
+		<title>NDR Niedersachsen</title>
+		<link>https://ndrfs-lh.akamaihd.net/i/ndrfs_nds@430233/master.m3u8</link>
+		<thumbnail>tv-ndr-niedersachsen.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>N3</EPG_ID>
+		<date>07.09.2018</date>
+		<epg_url></epg_url>
+	</item>
+	<item>
+		<title>rbb Fernsehen Brandenburg</title>
+		<link>https://rbblive-lh.akamaihd.net/i/rbb_brandenburg@349369/master.m3u8</link>
+		<thumbnail>tv-rbb-brandenburg.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>RBB</EPG_ID>
+		<date>07.09.2018</date>
+		<epg_url></epg_url>
+	</item>
+	<item>
+		<title>SR Fernsehen/title>
+		<link>https://srlive24-lh.akamaihd.net/i/sr_universal02@107595/master.m3u8</link>
+		<thumbnail>tv-sr.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>SWR</EPG_ID>
+		<date>07.09.2018</date>
+		<epg_schema>ARD</epg_schema>
+		<epg_url></epg_url>
+	</item>
+	<item>
+		<title>SWR Fernsehen Baden-Württemberg</title>
+		<link>https://swrbw-lh.akamaihd.net/i/swrbw_live@196738/master.m3u8</link>
+		<thumbnail>tv-swr.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>SWR</EPG_ID>
+		<date>07.09.2018</date>
+		<epg_url></epg_url>
+	</item>
+	<item>
+		<title>WDR Fernsehen im Livestream</title>
+		<link>https://wdrfsgeo-lh.akamaihd.net/i/wdrfs_geogeblockt@530016/master.m3u8</link>
+		<thumbnail>tv-wdr.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>WDR</EPG_ID>
+		<date>07.09.2018</date>
+		<epg_url></epg_url>
+	</item>
+</items>
+</channel>
+
+<channel>
+<name>Privat</name>
+<thumbnail>tv-privat.png</thumbnail>
+<fanart></fanart>
+<items>
+	<item>
+		<title>ServusTV</title>
+		<link>https://liveservustv-i.akamaihd.net/hls/live/271000/ServusTV_DE/master.m3u8</link>
+		<thumbnail>tv-servus.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>SERVU</EPG_ID>
+		<date>11.12.2016</date>
+	</item>
+	<item>
+		<title>DAF</title>
+		<link>rtmp://fms.daf.tmt.de/live/flv:dafstream100</link>
+		<thumbnail>tv-daf.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID></EPG_ID>
+		<date>25.02.2015</date>
+	</item>
+	<item>
+		<title>Welt / N24-Live</title>
+		<link>https://live2weltcms-lh.akamaihd.net/i/Live2WeltCMS_1@444563/index_3_av-b.m3u8?sd=10&dw=0&rebase=on</link>
+		<thumbnail>tv-n24.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>WELT</EPG_ID>
+		<date>30.01.2018</date>
+	</item>
+	<item>
+		<title>n-tv</title>
+		<link>LiveTV_ntv.m3u8</link>
+		<thumbnail>tv-ntv.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>NTV</EPG_ID>
+		<date>11.03.2017</date>
+	</item>
+	<item>
+		<title>QVC</title>
+		<link>http://live.qvcde.simplestreamcdn.com/live/qvcde_main_clean/bitrate1.isml/live.m3u8</link>
+		<thumbnail>tv-qvc.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>QVC</EPG_ID>
+		<date>05.11.2017</date>
+	</item>
+	<item>
+		<title>QVC BEAUTY & STYLE</title>
+		<link>http://live.qvcde.simplestreamcdn.com/live/qvcde_beauty_clean/bitrate1.isml/live.m3u8</link>
+		<thumbnail>tv-qvc.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>qvcbs</EPG_ID>
+		<date>05.11.2017</date>
+	</item>
+	<item>
+		<title>QVC PLUS</title>
+		<link>http://live.qvcde.simplestreamcdn.com/live/qvcde_plus_clean/bitrate1.isml/live.m3u8</link>
+		<thumbnail>tv-qvc.png</thumbnail>
+		<genre>TV</genre>
+		<EPG_ID>qvcp</EPG_ID>
+		<date>05.11.2017</date>
+	</item>
+</items>
+</channel>
+</channels>
