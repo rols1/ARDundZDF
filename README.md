@@ -91,12 +91,14 @@ Credits:
 - Credits to [Arauco] (https://forums.plex.tv/profile/Arauco): processing of Logos and Icons
 
 Hauptmenü:
-===================  
+=================== 
 ![img](https://github.com/rols1/PluginPictures/blob/master/ARDundZDF/Hauptmenue.png)
+
 
 ARD_Menü:
 ===================  
 ![img](https://github.com/rols1/PluginPictures/blob/master/ARDundZDF/ARD_Menue.png)
+
 
 ARD_Menue_Waehlen_Sie_Ihren_Sender:
 ===================  
