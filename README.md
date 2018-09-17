@@ -16,23 +16,17 @@ ab. Der Relaunch des ZDF-Mediathek-Internetangebots vom 28.10.2016 ist eingearbe
 Im Forum: https://forums.plex.tv/discussion/213947/rel-ARDundZDF
 direkt: rols1@gmx.de 
   
-Funktionen ab Version 2.2.0: 
+Funktionen: 
 ===================
 
-#### ARD Mediathek:  
+#### ARD Mediathek (Hybrid aus beta.ardmediathek.de und www.ardmediathek.de):  
 - Suche nach Sendungen
+- Startseite für ausgewählten Sender
 - Sendung Verpasst (Sendungen der letzten 7 Tage)
 - Sendungen A-Z
-- Filme
-- Dokus
-- Serien
-- Themen
-- Rubriken
-- MeistGesehen
-- Neueste Videos
-- am besten bewertet
 - Barrierearm (Hörfassung)
 - Bilderserien
+- Senderwahl
 
 #### ZDF Mediathek: 
 - Suche nach Sendungen
