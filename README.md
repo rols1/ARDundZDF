@@ -90,46 +90,34 @@ Credits:
 - Credits to [coder-alpha] https://forums.plex.tv/discussion/166602/rel-ccloudtv-channel-iptv/p1): (Channel updater, based on Channel updater by sharkone/BitTorrent.bundle)
 - Credits to [Arauco] (https://forums.plex.tv/profile/Arauco): processing of Logos and Icons
 
-Hauptmenü:
-=================== 
+### Hauptmenü:
 ![img](https://github.com/rols1/PluginPictures/blob/master/ARDundZDF/Hauptmenue.png)
 
-
-ARD_Menü:
-===================  
+### ARD_Menü:
 ![img](https://github.com/rols1/PluginPictures/blob/master/ARDundZDF/ARD_Menue.png)
 
-
-ARD_Menue_Waehlen_Sie_Ihren_Sender:
-===================  
+### ARD_Menue_Waehlen_Sie_Ihren_Sender:
 ![img](https://github.com/rols1/PluginPictures/blob/master/ARDundZDF/Menue_Waehlen_Sie_Ihren_Sender.png)
 
-Suche in ZDF Mediathek:
-===================  
+### Suche in ZDF Mediathek:
 ![img](https://us.v-cdn.net/6025034/uploads/editor/d5/lsawdl1xybzq.png)
 
-Videoformate ZDF Mediathek:
-===================  
+### Videoformate ZDF Mediathek:
 ![img](https://us.v-cdn.net/6025034/uploads/editor/pm/8y069jf7ad38.png)
 
-TV Livesender Vorauswahl:
-===================  
+### TV Livesender Vorauswahl:
 ![img](https://us.v-cdn.net/6025034/uploads/editor/i5/vo1g066f7n9n.jpg)
 
-Radio Livestreams Vorauswahl:
-===================  
+### Radio Livestreams Vorauswahl:
 ![img](https://github.com/rols1/PluginPictures/blob/master/ARDundZDF/Radio-Livestreams-Vorauswahl.png)
 
-Radio Livesender:
-===================  
+### Radio Livesender:
 ![img](https://us.v-cdn.net/6025034/uploads/editor/m7/qibbk5zksgkj.png)
 
-Podcast-Menü:
-===================  
+### Podcast-Menü:
 ![img](https://us.v-cdn.net/6025034/uploads/editor/mx/pgmo59s3layj.png)
 
-Podcast-Favoriten:
-===================  
+### Podcast-Favoriten:
 ![img](https://us.v-cdn.net/6025034/uploads/editor/as/s2ogw2bx2s5h.png)
 
 
