@@ -90,6 +90,9 @@ Credits:
 - Credits to [coder-alpha] https://forums.plex.tv/discussion/166602/rel-ccloudtv-channel-iptv/p1): (Channel updater, based on Channel updater by sharkone/BitTorrent.bundle)
 - Credits to [Arauco] (https://forums.plex.tv/profile/Arauco): processing of Logos and Icons
 
+*** Bilder
+===================  
+
 ### Hauptmenü:
 ![img](https://github.com/rols1/PluginPictures/blob/master/ARDundZDF/Hauptmenue.png)
 
