@@ -3,9 +3,10 @@ CHANGE HISTORY 	ARDundZDF - inoffizielles Plugin für den Plexmediaserver
 --------------		Nachfolger von Plex-Plugin-ARDMediathek2016
 --------------	
 
+18.09.2018	0.2.1	überflüssige Backup-Dateien im Code-Ordner entfernt.
 17.09.2018	0.2.0	PREFIXe in Modulen angepasst: zdfmobile,Pod_content, update_single.
 			ARDStart: Titel-Auswertung erweitert, Livestream-Erkennung verbessert.
-			Anpassungen für PHT (Leerparameter): ARDStartSingle,   	
+			Anpassungen für PHT (Leerparameter): ARDStartSingle, ARDStartVideoStreams, ARDStartVideoMP4.  	
 not on github	0.1.9	Podcasts: Anpassungen ARDMore (jetzt PODMore), Anpassung Main_POD.	
 not on github	0.1.8	ARDStart, ARDStartRubrik, ARDStartSingle: interne Markierung von Livestreams mittels
 			ID geändert (Titel und json-Inhalte nicht eindeutig).	
