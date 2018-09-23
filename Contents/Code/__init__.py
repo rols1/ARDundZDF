@@ -20,8 +20,8 @@ import EPG
 
 # +++++ ARDundZDF - Plugin für den Plexmediaserver +++++
 
-VERSION =  '0.2.0'		# 
-VDATE = '17.09.2018'
+VERSION =  '0.2.6'		 
+VDATE = '23.09.2018'
 
 # 
 #	
@@ -278,7 +278,7 @@ def Main():
 
 	# Menü Einstellungen (obsolet) ersetzt durch Info-Button
 	summary = 'Störungsmeldungen an Forum oder rols1@gmx.de'.decode(encoding="utf-8")
-	tagline = 'Forum: https://forums.plex.tv/discussion/213947/rel-plex-plugin-ardmediathek2016#latest'
+	tagline = 'Forum: https://forums.plex.tv/t/rel-ardundzdf/309751'
 	oc.add(DirectoryObject(key = Callback(Main), title = 'Info', summary = summary, thumb = R(ICON_INFO)))
 						
 	return oc
@@ -533,28 +533,35 @@ def ARDStart(title, sender):
 		# Formen: <h2 class=" hidden">Titel</h2>, <h2 class=" ">Titel/h2>
 		title 	= stringextract('<h2', '<div', grid)
 		title 	= stringextract('>', '<', title)
-		title	= unescape(title)
-		title = title.decode(encoding="utf-8")		
+		title 	= title.decode(encoding="utf-8")	
+		title_oc= unescape(title)						# nur für Button, title ist Referenz
+		noContent=stringextract('noContent">', '<', grid)	
+		if noContent:
+			title = "%s | % s" % (title, noContent)
 		img 	= stringextract('<img src="', '"', grid)	# Bild vom 1. Beitrag
+		
 		ID 		= 'ARDStart'
-		# if 'live' in title.lower():	# nicht sicher
-		if 'teaser live' in grid:
-			ID = 'Livestream'
+		if 'teaser live' in grid:						# eigenes Icon für Live-Beitrag 
+			href 	= stringextract('href="', '"', grid)
+			hrefsender = href.split('/')[-1]			# Bsp. ...zdGU/das-erste
+			playlist_img = get_playlist_img(hrefsender) # Icon aus livesenderTV.xml holen
+			if playlist_img:
+				img = playlist_img
+				# Log(title); Log(href)
+		# Log(title); Log(ID); 	
 		oc.add(DirectoryObject(key=Callback(ARDStartRubrik, path=path, title=title, img=img, 
-			ID=ID), title=title,  thumb=img))
+			ID=ID), title=title_oc,  thumb=img))
 		
 	Log(len(oc))
 	return oc
 	
-#-----------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------
 @route(PREFIX + '/ARDStartRubrik')	
-# Auflistung einer Rubrik aus ARDStart
-#	img (kompl. Pfad): eindeutige Referenz (title nicht)
+# Auflistung einer Rubrik aus ARDStart - title (ohne unescape) ist eindeutige Referenz 
 def ARDStartRubrik(path, title, img, ID=''): 
 	Log('ARDStartRubrik: %s' % ID);
-	title_org 	= title 
+	title_org 	= title 									# title ist Referenz zur Rubrik
 	title 		= title.decode(encoding="utf-8")		
-	img_org 	= img 
 		
 	oc = ObjectContainer(view_group="InfoList", title2=title, art = ObjectContainer.art)
 	oc = home(cont=oc, ID='ARD')							# Home-Button
@@ -570,10 +577,12 @@ def ARDStartRubrik(path, title, img, ID=''):
 		gridlist = blockextract('class="gridlist"', page)	# Rubriken
 		Log(len(gridlist))
 		for grid in gridlist:
-			img 	= stringextract('<img src="', '"', grid)# img ist Referenz zur Rubrik
-			if img == img_org:
+			title 	= stringextract('<h2', '<div', grid)
+			title 	= stringextract('>', '<', title)
+			# Log(title); Log(title_org);
+			if title == title_org:							# Referenz-Rubrik gefunden
 				break
-				
+			
 	sendungen = blockextract('class="_focusable"', grid)
 	Log(len(sendungen))
 	for s in sendungen:
@@ -585,17 +594,26 @@ def ARDStartRubrik(path, title, img, ID=''):
 		duration= stringextract('duration">', '</div>', s)
 		if duration == '':
 			duration = 'Dauer unbekannt'
-		if ID	== 'Livestream':
+		if	'class="day">Live</p>' in s:
+			ID = 'Livestream'
 			title = "Live: %s"	% title
 			duration = 'zu den Streaming-Formaten'
+			hrefsender = href.split('/')[-1]			# Bsp. ...zdGU/das-erste
+			# todo: get_playlist_img mit EPG erweitern
+			playlist_img = get_playlist_img(hrefsender) # Icon aus livesenderTV.xml holen
+			if playlist_img:
+				img = playlist_img
+				Log(title); Log(hrefsender); Log(img)
+		# Log(title); Log(href)
 		oc.add(DirectoryObject(key=Callback(ARDStartSingle, path=href, title=title, 
 			duration=duration, ID=ID), title=title,  summary=duration, thumb=img))				
 	Log(len(oc))
 	return oc
-#-----------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------
 @route(PREFIX + '/ARDStartSingle')	
 # Ermittlung der Videoquellen für eine Sendung - hier Aufteilung Formate Streaming + MP4
 # Videodaten in json-Abschnitt __APOLLO_STATE__ enthalten.
+# Bei Livestreams (m3u8-Links) verzweigen wir direkt zu SenderLiveResolution.
 # Videodaten unterteilt in _plugin":0 und _plugin":1,
 #	_plugin":0 enthält manifest.f4m-Url und eine mp4-Url, die auch in _plugin":1
 #	vorkommt.
@@ -633,15 +651,20 @@ def ARDStartSingle(path, title, duration, ID=''):
 		title = title + geoblock
 	else:
 		geoblock = ' | Geoblock: nein'
-		
-	# Test auf Livestream-Seite. Nicht sicher: Auswertung des Titels in data-rh="true,
-	#	__typename":"PlayerConfig' in page							
-	if ID	== 'Livestream':									# Livestream-Abzweig, Bsp. tagesschau24
+	
+	# Livestream-Abzweig, Bsp. tagesschau24:	
+	# 	Kennzeichnung Livestream: 'class="day">Live</p>' in ARDStartRubrik.
+	if ID	== 'Livestream':									
 		VideoUrls = blockextract('json":["', page)				# 
 		href = stringextract('json":["', '"', VideoUrls[-1])	# master.m3u8-Url
 		if href.startswith('//'):
 			href = 'http:' + href
 		Log(href)
+		# bis auf weiteres Web-Icons verwenden (16:9-Format OK hier für Webplayer + PHT):
+		#playlist_img = get_playlist_img(hrefsender) # Icon aus livesenderTV.xml holen
+		#if playlist_img:
+		#	img = playlist_img
+		#	Log(title); Log(hrefsender); Log(img)
 		return SenderLiveResolution(path=href, title=title, thumb=img)	
 
 	title_new 	= "Streaming-Formate | %s" % title
@@ -655,7 +678,7 @@ def ARDStartSingle(path, title, duration, ID=''):
 					
 	return oc
 		
-#-----------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------
 @route(PREFIX + '/ARDStartVideoStreams')
 #	Wiedergabe eines Videos aus ARDStart, hier Streaming-Formate
 #	Die Live-Funktion ist völlig getrennt von der Funktion TV-Livestreams - ohne EPG, ohne Private..
@@ -704,7 +727,7 @@ def ARDStartVideoStreams(title, path, summ, img, geoblock):
 	oc = Parseplaylist(oc, href, img, geoblock)	# einzelne Auflösungen 		
 			
 	return oc
-#-----------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------
 @route(PREFIX + '/ARDStartVideoMP4')	
 #	Wiedergabe eines Videos aus ARDStart, hier MP4-Formate
 #	Die Live-Funktion ist völlig getrennt von der Funktion TV-Livestreams - ohne EPG, ohne Private..
@@ -780,7 +803,7 @@ def SendungenAZ_ARDnew(title, path, button):
 		except:
 			sid = ''
 		if sid == button:
-			Log('button: %s sid: %s' % (button,sid))
+			Log('button: %s, sid: %s' % (button,sid))
 			break
 	
 	sendungen = blockextract('class="teaser show"', grid)
@@ -790,7 +813,7 @@ def SendungenAZ_ARDnew(title, path, button):
 	oc = ARDnew_Content(oc=oc, Blocklist=sendungen, CB=CB)
 	
 	return oc
-#-----------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------
 @route(PREFIX + '/ARDnew_Sendungen')	
 def ARDnew_Sendungen(title, path, img): 	# Seite mit mehreren Sendungen
 	Log('ARDnew_Sendungen:'); 
@@ -811,7 +834,7 @@ def ARDnew_Sendungen(title, path, img): 	# Seite mit mehreren Sendungen
 	oc = ARDnew_Content(oc=oc, Blocklist=sendungen, CB=CB)
 	
 	return oc
-#-----------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------
 # Extrahiert Sendungen aus Block in DirectoryObjects (zunächst nur für SendungenAZ_ARDnew).
 # Nicht geeignet für die Start-Inhalte.
 def ARDnew_Content(oc, Blocklist, CB): 		
@@ -842,7 +865,21 @@ def ARDnew_Content(oc, Blocklist, CB):
 	
 	return oc
 
-#-----------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------
+# Icon aus livesenderTV.xml holen
+# Bei Bedarf erweitern für EPG (s. SenderLiveListe)
+def get_playlist_img(hrefsender):
+	playlist_img = ''
+	playlist = Resource.Load(PLAYLIST)		
+	playlist = blockextract('<item>', playlist)
+	for p in playlist:
+		s = stringextract('hrefsender>', '</hrefsender', p)
+		if s == hrefsender:
+			playlist_img = stringextract('thumbnail>', '</thumbnail', p)
+			playlist_img = R(playlist_img)
+			break
+	return playlist_img
+#---------------------------------------------------------------------------------------------------
 
 ####################################################################################################
 @route(PREFIX + '/SendungenAZ')
@@ -898,7 +935,7 @@ def SendungenAZ(name, ID):
 			# path s. inaktive Buchstabe n
 			summ = 'Gezeigt wird der Inhalt für %s' % sendername
 			summ = summ.decode(encoding="utf-8")
-			Log(summ)
+			# Log(summ)
 			oc.add(DirectoryObject(key=Callback(SendungenAZ_ARDnew, title=title, path=path, button=button), 
 				title=title,  summary=summ, thumb=R(ICON_ARD_AZ)))
 										
@@ -964,8 +1001,7 @@ def Search(query=None, title=L('Search'), channel='ARD', s_type=None, offset=0, 
 			if len(entries) == 0:
 				err = 'keine weitere Bilderserie gefunden'
 				return ObjectContainer(header='Fehler', message=err)	
-			
-			
+						
 			page_high = re.findall('ctype="nav.page">(\d+)', page)[-1]	# letzte NR der nächsten Seiten
 			Log(page_high)
 			href_high = blockextract('class="entry">',  page)[-1]		# letzter Pfad der nächsten Seiten
@@ -979,7 +1015,7 @@ def Search(query=None, title=L('Search'), channel='ARD', s_type=None, offset=0, 
 					title=title, thumb=R(ICON_NEXT)))
 			for rec in entries:
 				href =  'http://www.ard.de' + stringextract('href="', '"', rec)
-				Log(href[:44])
+				Log(href[:60])
 				pagenr = re.search('ctype="nav.page">(\d+)', rec).group(1)
 				title = "Weiter zu Seite %s" % pagenr
 				title2 = name="%s: %s " %(s_type, pagenr)
@@ -1021,7 +1057,9 @@ def test_fault(page, path):	# testet geladene ARD-Seite auf ARD-spezif. Error-Te
 #
 def get_page(path, cTimeout=None):		# holt kontrolliert raw-Content, cTimeout für cacheTime
 	Log('get_page')
-	msg = ''; page = ''				
+	msg = ''; page = ''
+	UrlopenTimeout = 10
+					
 	try:
 		if cTimeout:					# mit Cachevorgabe
 			page = HTTP.Request(path, cacheTime=int(cTimeout) ).content	# 1. Versuch HTTP.Request 
@@ -1037,7 +1075,7 @@ def get_page(path, cTimeout=None):		# holt kontrolliert raw-Content, cTimeout f�
 			req = urllib2.Request(path)									# 2. Versuch urllib2.Request 
 			gcontext = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
 			gcontext.check_hostname = False
-			r = urllib2.urlopen(req, context=gcontext)
+			r = urllib2.urlopen(req, context=gcontext, timeout=UrlopenTimeout)
 			page = r.read()			
 		except Exception as exception:
 			summary = str(exception)
@@ -2529,7 +2567,7 @@ def TVLiveRecordSender(title):
 	Log(Prefs['pref_LiveRecord_ffmpegCall'])
 	# Log('PID-Liste: %s' % Dict['PID'])		# PID-Liste, Initialisierung in Main
 			
-	oc = ObjectContainer(view_group="InfoList", title1='Recording TV-Live', title2='Sender Auswahl', art = ICON)	
+	oc = ObjectContainer(view_group="InfoList", title1='Recording TV-Live', title2='Aufnahme starten', art = ICON)	
 	oc = home(cont=oc, ID=NAME)				# Home-Button	
 	
 	duration = Prefs['pref_LiveRecord_duration']
@@ -2814,8 +2852,8 @@ def SenderLiveListe(title, listname, offset=0):	#
 			
 	
 	# Besonderheit: die Senderliste wird lokal geladen (s.o.). Über den link wird die URL zur  
-	#	*.m3u8 geholt. Nach Anwahl eines Live-Senders erfolgt in SenderLiveResolution die Listung
-	#	der Auflösungsstufen.
+	#	*.m3u8 geholt. Nach Anwahl eines Live-Senders werden in SenderLiveResolution die 
+	#	einzelnen Auflösungsstufen ermittelt.
 	#
 	playlist = Resource.Load(PLAYLIST)					# lokale XML-Datei (Pluginverz./Resources)
 	playlist = blockextract('<channel>', playlist)
@@ -2828,7 +2866,7 @@ def SenderLiveListe(title, listname, offset=0):	#
 			mylist =  playlist[i] 
 			break
 	
-	liste = blockextract('<item>', mylist)
+	liste = blockextract('<item>', mylist)				# Details eines Senders
 	Log(len(liste));
 	EPG_ID_old = ''											# Doppler-Erkennung
 	sname_old=''; stime_old=''; summ_old=''; vonbis_old=''	# dto.

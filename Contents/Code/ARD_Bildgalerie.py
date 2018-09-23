@@ -4,8 +4,7 @@
 #
 ################################################################################
 
-PREFIX		 	= "/video/ardmediathek2016/ARD_Bildgalerie"
-
+PREFIX 			= '/video/ardundzdf'			
 
 # ----------------------------------------------------------------------			
 @route(PREFIX + '/page')	# Bilderserien ARD - Seitenübersicht

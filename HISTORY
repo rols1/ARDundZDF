@@ -3,6 +3,21 @@ CHANGE HISTORY 	ARDundZDF - inoffizielles Plugin für den Plexmediaserver
 --------------		Nachfolger von Plex-Plugin-ARDMediathek2016
 --------------	
 
+	
+23.09.2018	0.2.6	Modul ARD_Bildgalerie: PREFIX korrigiert.
+			Main: Info-Button aktualisiert
+not on github	0.2.5	ARDStart, ARDStartRubrik: Wechsel der Rubrik-Referenz zum Titel (ohne unescape)
+			(auch img nicht eindeutig)				
+not on github	0.2.4	livesenderTV.xml: Aktualisierung der m3u8-Links bei den Regionalsendern.
+			livesenderTV.xml: info-Tag eingefügt, Hinw. gemeinsame EPG-Quelle für SWR + SR. 
+			get_page: wg. langer Ladezeiten der ARD-Beta UrlopenTimeout=10 sec.
+not on github	0.2.3	ARDStartRubrik: bei Livestreams Nutzung der Icons in livesenderTV.xml (zunächst
+			nicht in ARDStartSingle).
+			ARDStart: dto. für ersten Livestream-Datensatz.			
+not on github	0.2.2	TV-Livestreams: Korrektur livesenderTV.xml (Hamburg -> Bremen).
+			Korrektur livesenderTV.xml: Zeichen < in Titel-Endtag bei SR Fernsehen ergänzt. 
+			TVLiveRecordSender: title2 geändert -> 'Aufnahme starten'.
+			ARDStart: Titel-Ergänzung, falls keine Inhalte vorhanden.
 18.09.2018	0.2.1	überflüssige Backup-Dateien im Code-Ordner entfernt.
 17.09.2018	0.2.0	PREFIXe in Modulen angepasst: zdfmobile,Pod_content, update_single.
 			ARDStart: Titel-Auswertung erweitert, Livestream-Erkennung verbessert.
