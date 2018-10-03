@@ -3,10 +3,10 @@ CHANGE HISTORY 	ARDundZDF - inoffizielles Plugin für den Plexmediaserver
 --------------		Nachfolger von Plex-Plugin-ARDMediathek2016
 --------------	
 
-	
+03.10.2018	0.2.7	Main_ZDF: Parameter in Callback VerpasstWoche entfernt (kanal, sender).	
 23.09.2018	0.2.6	Modul ARD_Bildgalerie: PREFIX korrigiert.
-			Main: Info-Button aktualisiert
-not on github	0.2.5	ARDStart, ARDStartRubrik: Wechsel der Rubrik-Referenz zum Titel (ohne unescape)
+			Main: Info-Button aktualisiert.
+not on github	0.2.5	ARDStart, ARDStartRubrik: Wechsel der Rubrik-Referenz zum Titel (ohne unescape),
 			(auch img nicht eindeutig)				
 not on github	0.2.4	livesenderTV.xml: Aktualisierung der m3u8-Links bei den Regionalsendern.
 			livesenderTV.xml: info-Tag eingefügt, Hinw. gemeinsame EPG-Quelle für SWR + SR. 

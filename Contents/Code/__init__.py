@@ -20,8 +20,8 @@ import EPG
 
 # +++++ ARDundZDF - Plugin für den Plexmediaserver +++++
 
-VERSION =  '0.2.6'		 
-VDATE = '23.09.2018'
+VERSION =  '0.2.7'		 
+VDATE = '03.10.2018'
 
 # 
 #	
@@ -347,8 +347,8 @@ def Main_ZDF(name):
 	oc.add(InputDirectoryObject(key=Callback(ZDF_Search, s_type='video', title=u'%s' % L('Search Video')),
 		title=u'%s' % L('Search'), prompt=u'%s' % L('Search Video'), thumb=R(ICON_ZDF_SEARCH)))
 		
-	oc.add(DirectoryObject(key=Callback(VerpasstWoche, name=name, title='Sendung verpasst', sender='ZDF', 
-		kanal='leer'), title="Sendung verpasst (1 Woche)", thumb=R(ICON_ZDF_VERP)))
+	oc.add(DirectoryObject(key=Callback(VerpasstWoche, name=name, title='Sendung verpasst'), 
+		title="Sendung verpasst (1 Woche)", thumb=R(ICON_ZDF_VERP)))
 	oc.add(DirectoryObject(key=Callback(ZDFSendungenAZ, name="Sendungen A-Z"), title="Sendungen A-Z",
 		thumb=R(ICON_ZDF_AZ)))
 	oc.add(DirectoryObject(key=Callback(Rubriken, name="Rubriken"), title="Rubriken", 
