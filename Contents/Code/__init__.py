@@ -20,8 +20,8 @@ import EPG
 
 # +++++ ARDundZDF - Plugin für den Plexmediaserver +++++
 
-VERSION =  '0.2.7'		 
-VDATE = '03.10.2018'
+VERSION =  '0.2.8'		 
+VDATE = '01.11.2018'
 
 # 
 #	
@@ -583,14 +583,14 @@ def ARDStartRubrik(path, title, img, ID=''):
 			if title == title_org:							# Referenz-Rubrik gefunden
 				break
 			
-	sendungen = blockextract('class="_focusable"', grid)
+	sendungen = blockextract('class="_focusable', grid)
 	Log(len(sendungen))
 	for s in sendungen:
 		href 	= BETA_BASE_URL + stringextract('href="', '"', s)
-		title 	= stringextract('headline">', '</h', s)
+		title 	= stringextract('title="', '"', s)
 		title	= unescape(title)
 		title 	= title.decode(encoding="utf-8")
-		img 	= stringextract('<img src="', '"', s)	
+		img 	= stringextract('src="', '"', s)	
 		duration= stringextract('duration">', '</div>', s)
 		if duration == '':
 			duration = 'Dauer unbekannt'
@@ -604,7 +604,7 @@ def ARDStartRubrik(path, title, img, ID=''):
 			if playlist_img:
 				img = playlist_img
 				Log(title); Log(hrefsender); Log(img)
-		# Log(title); Log(href)
+		Log(title); Log(href)
 		oc.add(DirectoryObject(key=Callback(ARDStartSingle, path=href, title=title, 
 			duration=duration, ID=ID), title=title,  summary=duration, thumb=img))				
 	Log(len(oc))
