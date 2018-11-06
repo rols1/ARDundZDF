@@ -20,8 +20,8 @@ import EPG
 
 # +++++ ARDundZDF - Plugin für den Plexmediaserver +++++
 
-VERSION =  '0.2.8'		 
-VDATE = '01.11.2018'
+VERSION =  '0.2.9'		 
+VDATE = '06.11.2018'
 
 # 
 #	
@@ -205,23 +205,23 @@ def Start():
 @route(PREFIX)
 @handler(PREFIX, NAME, art = ART, thumb = ICON)
 def Main():
-	Log('Funktion Main'); Log(PREFIX); 
-	Log('Plugin-Version: ' + VERSION); Log('Plugin-Datum: ' + VDATE)
+	PLog('Funktion Main'); PLog(PREFIX); 
+	PLog('Plugin-Version: ' + VERSION); PLog('Plugin-Datum: ' + VDATE)
 	client_platform = str(Client.Platform)								# Client.Platform: None möglich
 	client_product = str(Client.Product)								# Client.Product: None möglich
-	Log('Client-Platform: ' + client_platform)							
-	Log('Client-Product: ' + client_product)							
+	PLog('Client-Platform: ' + client_platform)							
+	PLog('Client-Product: ' + client_product)							
     
-	Log('Plattform: ' + sys.platform)									# Server-Infos
-	Log('Platform.OSVersion: ' + Platform.OSVersion)					# dto.
-	Log('Platform.CPU: '+ Platform.CPU)									# dto.
-	Log('Platform.ServerVersion: ' + Platform.ServerVersion)			# dto.
+	PLog('Plattform: ' + sys.platform)									# Server-Infos
+	PLog('Platform.OSVersion: ' + Platform.OSVersion)					# dto.
+	PLog('Platform.CPU: '+ Platform.CPU)									# dto.
+	PLog('Platform.ServerVersion: ' + Platform.ServerVersion)			# dto.
 	
 	Dict.Reset()							# Speicherobjekte des Plugins löschen
 	Dict['R'] 		= Core.storage.join_path(Core.bundle_path, 'Contents', 'Resources')
 	Dict['ARDSender'] 	= ARDSender[0]									# 1. Element in ARDSender
 																		# Auswahl s. Senderwahl
-	# Log(Dict['R'])	
+	# PLog(Dict['R'])	
 			
 	oc = ObjectContainer(view_group="InfoList", art=ObjectContainer.art)	# Plex akzeptiert nur InfoList + List, keine
 																			# Auswirkung auf Wiedergabe im Webplayer																																						
@@ -287,9 +287,12 @@ def Main():
 @route(PREFIX + '/Main_ARD')
 # sender neu belegt in Senderwahl
 def Main_ARD(name, sender=''):
-	Log('Funktion Main_ARD'); Log(PREFIX); Log(VERSION); Log(VDATE)	
-	Log(sender)
+	PLog('Funktion Main_ARD'); PLog(PREFIX); PLog(VERSION); PLog(VDATE)	
+	PLog(sender); 
+	if sender == '':
+		sender = Dict['ARDSender']
 	Dict['ARDSender'] = sender							# neu belegen nach Senderwahl
+	PLog(Dict['ARDSender'])
 	Dict.Save()	
 		
 	# no_cache = True für Dict-Aktualisierung erforderlich - Dict.Save() reicht nicht			 
@@ -303,7 +306,7 @@ def Main_ARD(name, sender=''):
 			
 	oc.add(InputDirectoryObject(key=Callback(Search,  channel='ARD', s_type='video', title=u'%s' % L('Search Video')),
 		title=u'%s' % L('Search'), prompt=u'%s' % L('Search Video'), thumb=R(ICON_SEARCH)))
-		
+
  	sendername, sender, kanal, img = sender.split(':')	 				# gewählter Sender für ARDStart 
 	title = 'Start'														# Startbutton 
 	summ 	= "Sender: %s" % sendername
@@ -336,7 +339,7 @@ def Main_ARD(name, sender=''):
 #---------------------------------------------------------------- 
 @route(PREFIX + '/Main_ZDF')
 def Main_ZDF(name):
-	Log('Funktion Main_ZDF'); Log(PREFIX); Log(VERSION); Log(VDATE)
+	PLog('Funktion Main_ZDF'); PLog(PREFIX); PLog(VERSION); PLog(VDATE)
 	oc = ObjectContainer(view_group="InfoList", art=ObjectContainer.art, title1=name)	
 	oc = home(cont=oc, ID=NAME)								# Home-Button	
 	
@@ -413,7 +416,7 @@ def Main_POD(name):
 	
 #----------------------------------------------------------------
 def home(cont, ID):												# Home-Button, Aufruf: oc = home(cont=oc, ID=NAME)
-	Log('home')	
+	PLog('home')	
 	title = 'Zurück zum Hauptmenü ' + str(ID)
 	title = title.decode(encoding="utf-8", errors="ignore")
 	summary = title
@@ -443,7 +446,7 @@ def home(cont, ID):												# Home-Button, Aufruf: oc = home(cont=oc, ID=NAME
 ####################################################################################################
 
 def ValidatePrefs():
-	Log('ValidatePrefs')
+	PLog('ValidatePrefs')
 	# Dict.Save()	# n.b. - Plex speichert in Funktion Set, benötigt trotzdem Funktion ValidatePrefs im Plugin
 	return
 	
@@ -453,11 +456,11 @@ def SearchUpdate(title):
 	oc = ObjectContainer(view_group="InfoList", art=ObjectContainer.art)	
 
 	ret = updater.update_available(VERSION)	
-	Log(ret)
+	PLog(ret)
 	if ret[0] == False:		
 		msg = 'Updater: Github-Problem'
 		msgH = 'update_available: False'
-		Log(msg)
+		PLog(msg)
 		return ObjectContainer(header=msgH, message=msg)
 
 	int_lv = ret[0]			# Version Github
@@ -467,7 +470,7 @@ def SearchUpdate(title):
 	tag = ret[4]			# History (last change) )
 	
 	url = 'https://github.com/{0}/releases/download/{1}/{2}.bundle.zip'.format(GITHUB_REPOSITORY, latest_version, REPO_NAME)
-	Log(latest_version); Log(int_lv); Log(int_lc); Log(url); 
+	PLog(latest_version); PLog(int_lv); PLog(int_lc); PLog(url); 
 	
 	if int_lv > int_lc:		# zum Testen drehen (akt. Plugin vorher sichern!)
 		oc.add(DirectoryObject(
@@ -505,10 +508,10 @@ def SearchUpdate(title):
 @route(PREFIX + '/ARDStart')	
 # Startseite der Mediathek - passend zum ausgewählten Sender.
 def ARDStart(title, sender): 
-	Log('ARDStart:'); 
+	PLog('ARDStart:'); 
 	
 	sendername, sender, kanal, img = Dict['ARDSender'].split(':')
-	Log(sender)	
+	PLog(sender)	
 	title2 = "Sender: %s" % sendername
 	title2 = title2.decode(encoding="utf-8")		
 	oc = ObjectContainer(view_group="InfoList", title2=title2, art = ObjectContainer.art)
@@ -518,7 +521,7 @@ def ARDStart(title, sender):
 	page, msg = get_page(path)					
 	if page == '':	
 		return 	ObjectContainer(header='Error', message=msg)						
-	Log(len(page))
+	PLog(len(page))
 	
 	if 'class="swiper-stage"' in page:						# Higlights im Wischermodus
 		swiper 	= stringextract('class="swiper-stage"', 'gridlist', page)
@@ -528,7 +531,7 @@ def ARDStart(title, sender):
 			ID='Swiper'), title=title,  thumb=img))
 								
 	gridlist = blockextract('class="gridlist"', page)		# Rubriken
-	Log(len(gridlist))
+	PLog(len(gridlist))
 	for grid in gridlist:
 		# Formen: <h2 class=" hidden">Titel</h2>, <h2 class=" ">Titel/h2>
 		title 	= stringextract('<h2', '<div', grid)
@@ -547,19 +550,19 @@ def ARDStart(title, sender):
 			playlist_img = get_playlist_img(hrefsender) # Icon aus livesenderTV.xml holen
 			if playlist_img:
 				img = playlist_img
-				# Log(title); Log(href)
-		# Log(title); Log(ID); 	
+				# PLog(title); PLog(href)
+		# PLog(title); PLog(ID); 	
 		oc.add(DirectoryObject(key=Callback(ARDStartRubrik, path=path, title=title, img=img, 
 			ID=ID), title=title_oc,  thumb=img))
 		
-	Log(len(oc))
+	PLog(len(oc))
 	return oc
 	
 #---------------------------------------------------------------------------------------------------
 @route(PREFIX + '/ARDStartRubrik')	
 # Auflistung einer Rubrik aus ARDStart - title (ohne unescape) ist eindeutige Referenz 
 def ARDStartRubrik(path, title, img, ID=''): 
-	Log('ARDStartRubrik: %s' % ID);
+	PLog('ARDStartRubrik: %s' % ID);
 	title_org 	= title 									# title ist Referenz zur Rubrik
 	title 		= title.decode(encoding="utf-8")		
 		
@@ -569,22 +572,22 @@ def ARDStartRubrik(path, title, img, ID=''):
 	page, msg = get_page(path)					
 	if page == '':	
 		return 	ObjectContainer(header='Error', message=msg)						
-	Log(len(page))
+	PLog(len(page))
 	
 	if ID == 'Swiper':										# vorangestellte Higlights
 		grid = stringextract('class="swiper-stage"', 'gridlist', page)
 	else:
 		gridlist = blockextract('class="gridlist"', page)	# Rubriken
-		Log(len(gridlist))
+		PLog(len(gridlist))
 		for grid in gridlist:
 			title 	= stringextract('<h2', '<div', grid)
 			title 	= stringextract('>', '<', title)
-			# Log(title); Log(title_org);
+			# PLog(title); PLog(title_org);
 			if title == title_org:							# Referenz-Rubrik gefunden
 				break
 			
 	sendungen = blockextract('class="_focusable', grid)
-	Log(len(sendungen))
+	PLog(len(sendungen))
 	for s in sendungen:
 		href 	= BETA_BASE_URL + stringextract('href="', '"', s)
 		title 	= stringextract('title="', '"', s)
@@ -603,11 +606,11 @@ def ARDStartRubrik(path, title, img, ID=''):
 			playlist_img = get_playlist_img(hrefsender) # Icon aus livesenderTV.xml holen
 			if playlist_img:
 				img = playlist_img
-				Log(title); Log(hrefsender); Log(img)
-		Log(title); Log(href)
+				PLog(title); PLog(hrefsender); PLog(img)
+		PLog(title); PLog(href)
 		oc.add(DirectoryObject(key=Callback(ARDStartSingle, path=href, title=title, 
 			duration=duration, ID=ID), title=title,  summary=duration, thumb=img))				
-	Log(len(oc))
+	PLog(len(oc))
 	return oc
 #---------------------------------------------------------------------------------------------------
 @route(PREFIX + '/ARDStartSingle')	
@@ -620,7 +623,7 @@ def ARDStartRubrik(path, title, img, ID=''):
 # Parameter duration (müsste sonst aus json-Daten neu ermittelt werden, Bsp. _duration":5318.
 # Falls path auf eine Rubrik-Seite zeigt, wird zu ARDStartRubrik zurück verzweigt.
 def ARDStartSingle(path, title, duration, ID=''): 
-	Log('ARDStartSingle: %s' % ID);
+	PLog('ARDStartSingle: %s' % ID);
 	title_org 	= title 
 	title 		= title.decode(encoding="utf-8")		
 	
@@ -630,18 +633,18 @@ def ARDStartSingle(path, title, duration, ID=''):
 	page, msg = get_page(path)					
 	if page == '':	
 		return 	ObjectContainer(header='Error', message=msg)						
-	Log(len(page))
+	PLog(len(page))
 	VideoUrls = blockextract('_quality', page)					# Videoquellen vorhanden?
 	if len(VideoUrls) == 0:	
 		gridlist = blockextract('class="gridlist"', page)		# Test auf Rubriken
 		if len(gridlist) > 0:
-			Log('%s Rubrik(en) -> ARDStartRubrik' % len(gridlist))
+			PLog('%s Rubrik(en) -> ARDStartRubrik' % len(gridlist))
 			return ARDStartRubrik(path, title, duration)		# zurück zu ARDStartRubrik
 		
 		msg = 'keine Videoquelle gefunden - Abbruch. Seite: ' + path
-		Log(msg)
+		PLog(msg)
 		return 	ObjectContainer(header='Error', message=msg)						
-	Log(len(VideoUrls))	
+	PLog(len(VideoUrls))	
 		
 	summ 		= stringextract('synopsis":"', '"', page)
 	img 		= stringextract('_previewImage":"', '"', page)
@@ -659,12 +662,12 @@ def ARDStartSingle(path, title, duration, ID=''):
 		href = stringextract('json":["', '"', VideoUrls[-1])	# master.m3u8-Url
 		if href.startswith('//'):
 			href = 'http:' + href
-		Log(href)
+		PLog(href)
 		# bis auf weiteres Web-Icons verwenden (16:9-Format OK hier für Webplayer + PHT):
 		#playlist_img = get_playlist_img(hrefsender) # Icon aus livesenderTV.xml holen
 		#if playlist_img:
 		#	img = playlist_img
-		#	Log(title); Log(hrefsender); Log(img)
+		#	PLog(title); PLog(hrefsender); PLog(img)
 		return SenderLiveResolution(path=href, title=title, thumb=img)	
 
 	title_new 	= "Streaming-Formate | %s" % title
@@ -682,8 +685,9 @@ def ARDStartSingle(path, title, duration, ID=''):
 @route(PREFIX + '/ARDStartVideoStreams')
 #	Wiedergabe eines Videos aus ARDStart, hier Streaming-Formate
 #	Die Live-Funktion ist völlig getrennt von der Funktion TV-Livestreams - ohne EPG, ohne Private..
+#	HTML-Seite mit json-Inhalt
 def ARDStartVideoStreams(title, path, summ, img, geoblock): 
-	Log('ARDStartVideoStreams:'); 
+	PLog('ARDStartVideoStreams:'); 
 	title = title.decode(encoding="utf-8")		
 	oc = ObjectContainer(view_group="InfoList", title2=title, art=ObjectContainer.art, no_cache=True)
 	client = str(Client.Platform)
@@ -693,25 +697,25 @@ def ARDStartVideoStreams(title, path, summ, img, geoblock):
 	page, msg = get_page(path)					
 	if page == '':	
 		return 	ObjectContainer(header='Error', message=msg)						
-	Log(len(page))
+	PLog(len(page))
 	
 	Plugins = blockextract('_plugin', page)	# wir verwenden nur Plugin1 (s.o.)
-	Plugin1	= Plugins[1]							
+	Plugin1	= Plugins[0]							
 	VideoUrls = blockextract('_quality', Plugin1)
-	Log(len(VideoUrls))
+	PLog(len(VideoUrls))
 	
 	href = ''
 	for video in  VideoUrls:
-		# Log(video)
+		# PLog(video)
 		q = stringextract('_quality":"', '"', video)	# Qualität (Bez. wie Original)
 		if q == 'auto':
 			href = stringextract('json":["', '"', video)	# Video-Url
 			quality = 'Qualität: automatische'
-			Log(quality); Log(href)	 
+			PLog(quality); PLog(href)	 
 			break
 	if 'master.m3u8' in href == False:						# möglich: ../master.m3u8?__b__=200
 		msg = 'keine Streamingquelle gefunden - Abbruch' 
-		Log(msg)
+		PLog(msg)
 		return 	ObjectContainer(header='Error', message=msg)	
 	
 	if href.startswith('http') == False:
@@ -732,7 +736,7 @@ def ARDStartVideoStreams(title, path, summ, img, geoblock):
 #	Wiedergabe eines Videos aus ARDStart, hier MP4-Formate
 #	Die Live-Funktion ist völlig getrennt von der Funktion TV-Livestreams - ohne EPG, ohne Private..
 def ARDStartVideoMP4(title, path, summ, img, geoblock): 
-	Log('ARDStartVideoMP4:'); 
+	PLog('ARDStartVideoMP4:'); 
 	title_org=title; summary_org=summ; thumb=img; tagline_org=''	# Backup 
 	title = title.decode(encoding="utf-8")		
 	oc = ObjectContainer(view_group="InfoList", title2=title, art=ObjectContainer.art, no_cache=True)
@@ -743,12 +747,12 @@ def ARDStartVideoMP4(title, path, summ, img, geoblock):
 	page, msg = get_page(path)					
 	if page == '':	
 		return 	ObjectContainer(header='Error', message=msg)						
-	Log(len(page))
+	PLog(len(page))
 	
 	Plugins = blockextract('_plugin', page)	# wir verwenden nur Plugin1 (s.o.)
-	Plugin1	= Plugins[1]							
+	Plugin1	= Plugins[0]							
 	VideoUrls = blockextract('_quality', Plugin1)
-	Log(len(VideoUrls))
+	PLog(len(VideoUrls))
 	
 	href = ''
 	download_list = []		# 2-teilige Liste für Download: 'title # url'
@@ -774,9 +778,9 @@ def ARDStartVideoMP4(title, path, summ, img, geoblock):
 		oc.add(CreateVideoClipObject(url=href, title=title, 
 			summary=Format+geoblock, meta=href, thumb=img, tagline='leer', duration='leer', resolution='leer'))
 			
-	Log(download_list[:80])
+	PLog(download_list[:80])
 	if 	download_list:			
-		Log(title);Log(summary_org);Log(tagline_org);Log(thumb);
+		PLog(title);PLog(summary_org);PLog(tagline_org);PLog(thumb);
 		oc = test_downloads(oc,download_list,title_org,summary_org,tagline_org,thumb,high=-1)  # Downloadbutton(s)		
 	
 	return oc
@@ -785,7 +789,8 @@ def ARDStartVideoMP4(title, path, summ, img, geoblock):
 @route(PREFIX + '/SendungenAZ_ARDnew')	
 # Auflistung der A-Z-Buttons bereits in SendungenAZ
 def SendungenAZ_ARDnew(title, path, button): 
-	Log('SendungenAZ_ARDnew:'); 
+	PLog('SendungenAZ_ARDnew:'); 
+	PLog('button: ' + button)
 	title = title.decode(encoding="utf-8")		
 	oc = ObjectContainer(view_group="InfoList", title2=title, art=ObjectContainer.art, no_cache=True)
 	oc = home(cont=oc, ID='ARD')							# Home-Button
@@ -793,21 +798,24 @@ def SendungenAZ_ARDnew(title, path, button):
 	page, msg = get_page(path)					
 	if page == '':	
 		return 	ObjectContainer(header='Error', message=msg)						
-	Log(len(page))
-	gridlist = blockextract('class="gridlist"', page)	# A-Z, 0-9
-	Log(len(gridlist))
-	grid = ''
-	for grid in gridlist:
-		try:											# z.B. id="_"><h2>#</h2> od. id="A"><h2>A</h2>
-			sid = re.search(u'<h2>(.*)</h2>', grid).group(1)	
-		except:
-			sid = ''
-		if sid == button:
-			Log('button: %s, sid: %s' % (button,sid))
-			break
+	PLog(len(page))
+	gridlist = blockextract('"shortTitle":', page)	# A-Z, 0-9
+	PLog(len(gridlist))
 	
-	sendungen = blockextract('class="teaser show"', grid)
-	Log(len(sendungen))
+	sendungen = []
+	cnt_item = 0
+	for grid in gridlist:			
+		shortTitle = stringextract('"shortTitle":', ',', grid)
+		shortTitle = shortTitle.replace('"', '').strip()
+		# PLog(shortTitle)
+		if shortTitle[0:1] == button:				# Match: Anfangbuchstabe mit Button
+			cnt_item = cnt_item +1
+			# PLog('button: %s, cnt_item: %s' % (button,cnt_item))
+			sendungen.append(grid)
+	
+	PLog(len(sendungen))
+	if len(sendungen) == 0:	
+		return 	ObjectContainer(header='Error', message='Keine Sendungen gefunden.')						
 	
 	CB = 'ARDnew_Sendungen'
 	oc = ARDnew_Content(oc=oc, Blocklist=sendungen, CB=CB)
@@ -816,7 +824,7 @@ def SendungenAZ_ARDnew(title, path, button):
 #---------------------------------------------------------------------------------------------------
 @route(PREFIX + '/ARDnew_Sendungen')	
 def ARDnew_Sendungen(title, path, img): 	# Seite mit mehreren Sendungen
-	Log('ARDnew_Sendungen:'); 
+	PLog('ARDnew_Sendungen:'); 
 	title = title.decode(encoding="utf-8")		
 	oc = ObjectContainer(view_group="InfoList", title2=title, art = ObjectContainer.art)
 	oc = home(cont=oc, ID='ARD')							# Home-Button
@@ -827,7 +835,7 @@ def ARDnew_Sendungen(title, path, img): 	# Seite mit mehreren Sendungen
 	sendungen = blockextract('class="teaser broadcast"', page)
 	if len(sendungen) == 0:	
 		msg = 'keine Inhalte gefunden - Abbruch' 
-		Log(msg)
+		PLog(msg)
 		return 	ObjectContainer(header='Info', message=msg)	
 		
 	CB = 'ARDStartSingle'
@@ -837,31 +845,51 @@ def ARDnew_Sendungen(title, path, img): 	# Seite mit mehreren Sendungen
 #---------------------------------------------------------------------------------------------------
 # Extrahiert Sendungen aus Block in DirectoryObjects (zunächst nur für SendungenAZ_ARDnew).
 # Nicht geeignet für die Start-Inhalte.
+# 05.11.2018 Webseite geändert: redakt. Inhalt im json-Format - siehe SendungenAZ
 def ARDnew_Content(oc, Blocklist, CB): 		
-	Log('ARDnew_Content')
+	PLog('ARDnew_Content:')
+	PLog('CB: ' + CB)
 	
-	for sendung in Blocklist:
-		href 		= BETA_BASE_URL + stringextract('href="', '"', sendung)
-		img 		= stringextract('src="', '"', sendung)
-		duration 	= stringextract('class="duration">', '</', sendung)
-		headline 	= stringextract('class="headline">', '</', sendung)
-		headline	= unescape(headline)
-		if duration:
-			headline	= headline + " | " + duration
-		headline 	= headline.decode(encoding="utf-8")		
-		subline 	= stringextract('class="subline">', '</', sendung)
-		if subline:
-			subline 	= subline.decode(encoding="utf-8")
-			subline		= unescape(subline)
-		else:
-			subline= ' '	# für PHT
-		# Log(href); Log(img); Log(headline); Log(subline);
-		if CB == 'ARDnew_Sendungen':
-			oc.add(DirectoryObject(key=Callback(ARDnew_Sendungen, title=headline, path=href, 
-				img=img), title=headline, summary=subline, thumb=img))		
-		if CB == 'ARDStartSingle':
+	if CB == 'ARDStartSingle':
+		for sendung in Blocklist:
+			href 		= BETA_BASE_URL + stringextract('href="', '"', sendung)
+			img 		= stringextract('src="', '"', sendung)
+			duration 	= stringextract('class="duration">', '</', sendung)
+			headline 	= stringextract('class="headline', '</', sendung)
+			headline	 = headline.replace('">', '')
+			headline	= unescape(headline)
+			
+			if duration:
+				headline	= headline + " | " + duration
+			headline 	= headline.decode(encoding="utf-8")		
+			subline 	= stringextract('class="subline">', '</', sendung)
+			if subline:
+				subline 	= subline.decode(encoding="utf-8")
+				subline		= unescape(subline)
+			else:
+				subline= ' '	# für PHT
+			PLog(href); PLog(img); PLog(headline); PLog(subline);
 			oc.add(DirectoryObject(key=Callback(ARDStartSingle, path=href, title=headline, 
-				duration=duration, ID='ARDnew_Content'), title=headline,  summary=duration, thumb=img))				
+				duration=duration, ID='ARDnew_Content'), title=headline,  summary=duration, thumb=img))
+						
+	if CB == 'ARDnew_Sendungen':
+		for sendung in Blocklist:
+			headline = stringextract('shortTitle":', ',', sendung)
+			headline = headline.replace('"', '').strip()
+			headline = headline.decode(encoding="utf-8")
+			img 	= stringextract('"src":', ',', sendung)
+			img	 	= (img.replace('"', '').replace('{width}', '640'))
+			img	 	= img.strip()
+			sid 	= stringextract('"id":"$Teaser:', '.', sendung)
+			sname 	= (headline.replace('#', '').replace(' ', '-').replace('(', '').replace(')', '')
+				.replace(':', ' '))
+			sname	= transl_umlaute(sname)
+			href 	= 'https://beta.ardmediathek.de/ard/shows/%s/%s' % (sid, sname)
+			
+			PLog(href); PLog(img); PLog(headline); PLog(sid);		
+			oc.add(DirectoryObject(key=Callback(ARDnew_Sendungen, title=headline, path=href, 
+				img=img), title=headline, thumb=img))		
+			
 	
 	return oc
 
@@ -886,11 +914,11 @@ def get_playlist_img(hrefsender):
 # 	Auflistung 0-9 (1 Eintrag), A-Z (einzeln) 
 #	ID = PODCAST, ARD
 def SendungenAZ(name, ID):		
-	Log('SendungenAZ: ' + name)
-	Log(ID)
+	PLog('SendungenAZ: ' + name)
+	PLog(ID)
 	
 	sendername, sender, kanal, img = Dict['ARDSender'].split(':')
-	Log(sender)	
+	PLog(sender)	
 	title2 = name + ' | aktuell: %s' % sendername
 	# no_cache = True für Dict-Aktualisierung erforderlich - Dict.Save() reicht nicht			 
 	oc = ObjectContainer(view_group="InfoList", title2=title2, art=ObjectContainer.art, no_cache=True)
@@ -906,40 +934,29 @@ def SendungenAZ(name, ID):
 	
 	# Die einzelnen Kanal-Seiten müssen leider auch einzeln geladen werden. Die Alle-Seite 
 	# enthält zwar sämtliche Links, jedoch jweils mit der Url /ard/shows.. statt /{kanal}/shows..
-	inactive_char = []
-	if ID != 'PODCAST':
-		path = BETA_BASE_URL + "/%s/shows" % sender
-		page, msg = get_page(path)					
-		if page == '':	
-			return 	ObjectContainer(header='Error', message=msg)						
-		Log(len(page))
-		gridlist = blockextract('class="gridlist"', page)
-		Log(len(gridlist))
-		for grid in gridlist:
-			if len(blockextract('class="teaser show"', grid)) == 0:	# Anz. Sendungen
-				sid = stringextract('<h2>', '</h2>', grid)		# <h2>X</h2>
-				inactive_char.append(sid)													
+	# 05.11.2018 Webseite geändert: redakt. Inhalt im json-Format, Ziel-Url's werden von der ARD 
+	#	Hintergrund über ID's ermittelt, ledigl. img-Urls im Klartext vorhanden.
+	# 	Kein Merkmal mehr für Inaktive Buchstaben vorhanden - Kennz. entfällt.
 													
-	Log(inactive_char)										
 	for button in azlist:	
-		# Log(button)
+		# PLog(button)
 		title = "Sendungen mit " + button
-		if button in inactive_char:	
-			continue
+		#if button in inactive_char:	
+		#	continue
 		if ID == 'PODCAST':
 			azPath = POD_AZ + button
 			mode = 'Sendereihen'
 			oc.add(DirectoryObject(key=Callback(SinglePage, title=title, path=azPath, next_cbKey=next_cbKey, 
 				mode=mode, ID=ID), title=title,  thumb=R(ICON_ARD_AZ)))
 		else:
-			# path s. inaktive Buchstabe n
+			path = BETA_BASE_URL + "/%s/shows" % sender
 			summ = 'Gezeigt wird der Inhalt für %s' % sendername
 			summ = summ.decode(encoding="utf-8")
-			# Log(summ)
+			# PLog(summ)
 			oc.add(DirectoryObject(key=Callback(SendungenAZ_ARDnew, title=title, path=path, button=button), 
 				title=title,  summary=summ, thumb=R(ICON_ARD_AZ)))
 										
-	Log(len(oc))
+	PLog(len(oc))
 	return oc
 #-----------------------
 
@@ -948,10 +965,10 @@ def SendungenAZ(name, ID):
 	# Vorgabe UND-Verknüpfung (auch Podcast)
 	# offset: verwendet nur bei Bilderserien (Funktionen s. ARD_Bildgalerie.py)
 def Search(query=None, title=L('Search'), channel='ARD', s_type=None, offset=0, path=None, **kwargs):
-	Log('Search:'); Log(query); Log(channel); Log(str(offset))
+	PLog('Search:'); PLog(query); PLog(channel); PLog(str(offset))
 	query = query.replace(' ', '+')			# Leer-Trennung = UND-Verknüpfung bei Podcast-Suche 
 	query = urllib2.quote(query, "utf-8")
-	Log(query)
+	PLog(query)
 
 	name = 'Suchergebnis zu: ' + urllib2.unquote(query)
 	name = name.decode(encoding="utf-8", errors="ignore")
@@ -970,9 +987,9 @@ def Search(query=None, title=L('Search'), channel='ARD', s_type=None, offset=0, 
 		path =  BASE_URL  + POD_SEARCH
 		path = path % query
 		ID=channel
-	Log(path) 
+	PLog(path) 
 	page = HTTP.Request(path).content
-	Log(len(page))
+	PLog(len(page))
 	
 	err = test_fault(page, path)		# ARD-spezif. Error-Test
 	if err:
@@ -997,16 +1014,16 @@ def Search(query=None, title=L('Search'), channel='ARD', s_type=None, offset=0, 
 			entries = blockextract('class="entry">',  page)
 			if offset:		# 5 Seiten aus vorheriger Liste abziehen
 				entries = entries[4:]
-			Log(len(entries))
+			PLog(len(entries))
 			if len(entries) == 0:
 				err = 'keine weitere Bilderserie gefunden'
 				return ObjectContainer(header='Fehler', message=err)	
 						
 			page_high = re.findall('ctype="nav.page">(\d+)', page)[-1]	# letzte NR der nächsten Seiten
-			Log(page_high)
+			PLog(page_high)
 			href_high = blockextract('class="entry">',  page)[-1]		# letzter Pfad der nächsten Seiten
 			href_high = 'http://www.ard.de' + stringextract('href="', '"', href_high)
-			Log(href_high)
+			PLog(href_high)
 			
 			import ARD_Bildgalerie
 			if offset == 0:
@@ -1015,7 +1032,7 @@ def Search(query=None, title=L('Search'), channel='ARD', s_type=None, offset=0, 
 					title=title, thumb=R(ICON_NEXT)))
 			for rec in entries:
 				href =  'http://www.ard.de' + stringextract('href="', '"', rec)
-				Log(href[:60])
+				PLog(href[:60])
 				pagenr = re.search('ctype="nav.page">(\d+)', rec).group(1)
 				title = "Weiter zu Seite %s" % pagenr
 				title2 = name="%s: %s " %(s_type, pagenr)
@@ -1026,7 +1043,7 @@ def Search(query=None, title=L('Search'), channel='ARD', s_type=None, offset=0, 
 			#	Ablauf im Web (Klick auf die höchste Seite): Paging zeigt 4 vorige und 5 nächste Seiten, 
 			#	Bsp. Seite 10: 6 -9, 11 - 15
 			#	Hier zeigen wir nur die nächsten 5, um Wiederholungen zu vermeiden
-			Log('page_high: ' + page_high)
+			PLog('page_high: ' + page_high)
 			title = 'Mehr %s'	% s_type					
 			oc.add(DirectoryObject(key=Callback(Search, query=query, channel='ARD', s_type=s_type, 
 				offset=page_high, path=href_high), title=title, thumb=R(ICON_MEHR)))	
@@ -1037,13 +1054,13 @@ def Search(query=None, title=L('Search'), channel='ARD', s_type=None, offset=0, 
  
 #-----------------------
 def test_fault(page, path):	# testet geladene ARD-Seite auf ARD-spezif. Error-Test
-	Log('test_fault')
+	PLog('test_fault')
 	
  	error_txt = '<title>Leider liegt eine Störung vor | ARD Mediathek</title>'	
 	if page.find(error_txt) >= 0:
 		error_txt = 'Leider liegt eine Störung vor | ARD Mediathek | interne Serverprobleme'			 			 	 
 		msgH = 'Fehler'; msg = error_txt + ' | Seite: ' + path
-		Log(msg)
+		PLog(msg)
 		msg =  msg.decode(encoding="utf-8", errors="ignore")
 		# return ObjectContainer(header=msgH, message=msg)		# muss Aufrufer erledigen
 		return error_txt
@@ -1056,7 +1073,7 @@ def test_fault(page, path):	# testet geladene ARD-Seite auf ARD-spezif. Error-Te
 #	S.a. loadPage in Modul zdfmobile.
 #
 def get_page(path, cTimeout=None):		# holt kontrolliert raw-Content, cTimeout für cacheTime
-	Log('get_page')
+	PLog('get_page')
 	msg = ''; page = ''
 	UrlopenTimeout = 10
 					
@@ -1068,7 +1085,7 @@ def get_page(path, cTimeout=None):		# holt kontrolliert raw-Content, cTimeout f�
 	except Exception as exception:
 		summary = str(exception)
 		summary = summary.decode(encoding="utf-8", errors="ignore")
-		Log(summary)		
+		PLog(summary)		
 		
 	if page == '':
 		try:
@@ -1080,12 +1097,12 @@ def get_page(path, cTimeout=None):		# holt kontrolliert raw-Content, cTimeout f�
 		except Exception as exception:
 			summary = str(exception)
 			summary = summary.decode(encoding="utf-8", errors="ignore")
-			Log(summary)		
+			PLog(summary)		
 			
 	if page == '':
 		error_txt = 'Seite nicht erreichbar oder nicht mehr vorhanden'			 			 	 
 		msgH = 'Fehler'; msg = error_txt + ' | Seite: ' + path
-		Log(msg)
+		PLog(msg)
 		msg =  msg.decode(encoding="utf-8", errors="ignore")
 
 	return page, msg	
@@ -1104,7 +1121,7 @@ def get_page(path, cTimeout=None):		# holt kontrolliert raw-Content, cTimeout f�
 	#	Wochentag-Buttons -> ZDF_Verpasst
 	#
 def VerpasstWoche(name, title):		# Wochenliste zeigen, name: ARD, ZDF Mediathek
-	Log('VerpasstWoche')
+	PLog('VerpasstWoche')
 	sendername, sender, kanal, img = Dict['ARDSender'].split(':')	
 	title_org = '%s | aktuell: %s'	% (title, sendername)
 	
@@ -1131,7 +1148,7 @@ def VerpasstWoche(name, title):		# Wochenliste zeigen, name: ARD, ZDF Mediathek
 		if nr == 1:
 			iWeekday = 'Gestern'	
 		iWeekday = transl_wtag(iWeekday)
-		Log(iPath); Log(iDate); Log(iWeekday);
+		PLog(iPath); PLog(iDate); PLog(iWeekday);
 		#title = ("%10s ..... %10s"% (iWeekday, iDate))	 # Formatierung in Plex ohne Wirkung
 		title =	"%s | %s" % (iDate, iWeekday)
 		cbKey = 'SinglePage'	# cbKey = Callback für Container in PageControl
@@ -1169,7 +1186,7 @@ def transl_wtag(tag):	# Wochentage engl./deutsch wg. Problemen mit locale-Settin
 #	Verpasst-Seite (BASE_URL + ARD_VERPASST) neu holen (1. Block class="entryGroup").
 # 	ARDnew: Bremen ohne Kanal, tagesschau24 n.v.
 def Senderwahl(title):	
-	Log('Senderwahl'); 
+	PLog('Senderwahl'); 
 	title=title.decode(encoding="utf-8", errors="ignore")
 	# entries = Sendername : Sender (Pfadbestandteil): Kanal : Icon
 			
@@ -1177,9 +1194,9 @@ def Senderwahl(title):
 	oc = home(cont=oc, ID='ARD')						# Home-Button	
 	
 	for entry in ARDSender:								# entry -> Dict['ARDSender'] in Main_ARD
-		Log(entry)
+		PLog(entry)
 		sendername, sender, kanal, img = entry.split(':')
-		Log('sendername: %s, sender: %s, kanal: %s, img: %s'	% (sendername, sender, kanal, img))
+		PLog('sendername: %s, sender: %s, kanal: %s, img: %s'	% (sendername, sender, kanal, img))
 		title = 'Sender: %s' % sendername
 		title=title.decode(encoding="utf-8", errors="ignore")
 			
@@ -1196,7 +1213,7 @@ def Senderwahl(title):
 # mode: 'Sendereihen', 'Suche' 	- steuert Ausschnitt in SinglePage + bei Podcast Kopfauswertung 1.Satz
 #									
 def PODMore(title, morepath, next_cbKey, ID, mode):
-	Log('PODMore'); Log(morepath); Log(ID)
+	PLog('PODMore'); PLog(morepath); PLog(ID)
 	title2=title.decode(encoding="utf-8", errors="ignore")
 	oc = ObjectContainer(view_group="InfoList", title1=NAME, title2=title2, art = ObjectContainer.art)
 	oc = home(cont=oc, ID=ID)							# Home-Button
@@ -1208,11 +1225,11 @@ def PODMore(title, morepath, next_cbKey, ID, mode):
 		return ObjectContainer(header='Fehler', message=err)	
 							
 	pagenr_path =  re.findall("=page.(\d+)", page) # Mehrfachseiten?
-	Log(pagenr_path)
+	PLog(pagenr_path)
 	if pagenr_path:
 		del pagenr_path[-1]						# letzten Eintrag entfernen (Doppel) - OK
-	Log(pagenr_path)
-	Log(path)	
+	PLog(pagenr_path)
+	PLog(path)	
 	
 	if page.find('mcontents=page.') >= 0: 		# Podcast
 		prefix = 'mcontents=page.'
@@ -1224,14 +1241,14 @@ def PODMore(title, morepath, next_cbKey, ID, mode):
 	if pagenr_path:	 							# bei Mehrfachseiten Liste Weiter bauen, beginnend mit 1. Seite
 		title = 'Weiter zu Seite 1'
 		path = morepath + '&' + prefix + '1' # 1. Seite, morepath würde auch reichen
-		Log(path)
+		PLog(path)
 		oc.add(DirectoryObject(key=Callback(SinglePage, path=path, title=title, next_cbKey=next_cbKey, mode=mode, ID=ID), 
 			title=title, tagline='', summary='',  thumb=R(ICON_NEXT)))			
 		
 		for page_nr in pagenr_path:
 			path = morepath + '&' + prefix + page_nr
 			title = 'Weiter zu Seite ' + page_nr
-			Log(path)
+			PLog(path)
 			oc.add(DirectoryObject(key=Callback(SinglePage, path=path, title=title, next_cbKey=next_cbKey, 
 				mode=mode, ID=ID), title=title, tagline='', summary='', thumb=R(ICON_NEXT)))			
 	else:										# bei nur 1 Seite springen wir direkt, z.Z. bei Rubriken
@@ -1244,13 +1261,13 @@ def PODMore(title, morepath, next_cbKey, ID, mode):
 def PodFavoritenListe(title, offset=0):
 	import Pod_content
 	
-	Log('PodFavoritenListe'); 
+	PLog('PodFavoritenListe'); 
 	title_org = title
 	
 	fname =  Prefs['pref_podcast_favorits']		# Default: podcast-favorits.txt im Ressourcenverz.
-	Log(fname)
+	PLog(fname)
 	if os.path.isfile(fname) == False:
-		Log(fname + ' nicht gefunden')					
+		PLog(fname + ' nicht gefunden')					
 		Inhalt = Resource.Load(FAVORITS_Pod)	
 	else:										
 		try:
@@ -1262,7 +1279,7 @@ def PodFavoritenListe(title, offset=0):
 		msg='Datei podcast-favorits.txt nicht gefunden oder nicht lesbar.\nBitte Einstellungen prüfen.'
 		return NotFound(msg)
 							
-	# Log(Inhalt) 
+	# PLog(Inhalt) 
 	bookmarks = []
 	lines = Inhalt.splitlines()
 	for line in lines:						# Kommentarzeilen + Leerzeilen löschen
@@ -1283,7 +1300,7 @@ def PodFavoritenListe(title, offset=0):
 
 	for i in range(len(bookmarks)):
 		cnt = int(i) + int(offset)
-		# Log(cnt); Log(i)
+		# PLog(cnt); PLog(i)
 		if int(cnt) >= max_len:				# Gesamtzahl überschritten?
 			break
 		if i >= rec_per_page:				# Anzahl pro Seite überschritten?
@@ -1296,11 +1313,11 @@ def PodFavoritenListe(title, offset=0):
 			path = path.strip() 
 		except:
 			title=''; path=''
-		Log(title); Log(path)
+		PLog(title); PLog(path)
 		if path == '':						# ohne Link kein verwertbarer Favorit
 			continue
 		
-		Log(title); Log(path)
+		PLog(title); PLog(path)
 		title=title.decode(encoding="utf-8", errors="ignore")
 		summary='Favoriten: ' + title
 		summary=summary.decode(encoding="utf-8", errors="ignore")
@@ -1309,10 +1326,10 @@ def PodFavoritenListe(title, offset=0):
 				
 	
 	# Mehr Seiten anzeigen:
-	Log(offset); Log(cnt); Log(max_len);
+	PLog(offset); PLog(cnt); PLog(max_len);
 	if (int(cnt) +1) < int(max_len): 						# Gesamtzahl noch nicht ereicht?
 		new_offset = cnt + int(offset)
-		Log(new_offset)
+		PLog(new_offset)
 		summ = 'Mehr (insgesamt ' + str(max_len) + ' Favoriten)'
 		summ = summ.decode(encoding="utf-8", errors="ignore")
 		oc.add(DirectoryObject(key=Callback(PodFavoritenListe, title=title_org, offset=new_offset), 
@@ -1325,7 +1342,7 @@ def PodFavoritenListe(title, offset=0):
 # ausbauen, falls PMS mehr erlaubt (Untertitle)
 # ohne offset - ARD-Ergebnisse werden vom Sender seitenweise ausgegeben 
 def BarriereArmARD(name):		# 
-	Log('BarriereArmARD')
+	PLog('BarriereArmARD')
 	
 	title = name.decode(encoding="utf-8", errors="ignore")
 	oc = ObjectContainer(title2='ARD: ' + title, view_group="List")
@@ -1349,25 +1366,25 @@ def BarriereArmARD(name):		#
 	# PODMore stellt die Seitenverweise selbst zusammen.	
 	# 
 def PageControl(cbKey, title, path, mode, ID, offset=0):  # ID='ARD', 'POD', mode='Suche', 'VERPASST', 'Sendereihen'
-	Log('PageControl'); Log('cbKey: ' + cbKey); Log(path)
-	Log('mode: ' + mode); Log('ID: ' + str(ID))
+	PLog('PageControl'); PLog('cbKey: ' + cbKey); PLog(path)
+	PLog('mode: ' + mode); PLog('ID: ' + str(ID))
 	title1='Folgeseiten: ' + title.decode(encoding="utf-8", errors="ignore")
 	
 	oc = ObjectContainer(view_group="InfoList", title1=title1, title2=title1, art = ObjectContainer.art)
 	oc = home(cont=oc, ID=ID)							# Home-Button
 	
 	page = HTTP.Request(path).content
-	Log(len(page))
+	PLog(len(page))
 	path_page1 = path							# Pfad der ersten Seite sichern, sonst gehts mit Seite 2 weiter	
 
 	pagenr_suche = re.findall("mresults=page", page)   
 	pagenr_andere = re.findall("mcontents=page", page)  
 	pagenr_einslike = re.findall("mcontent=page", page)  	# auch in ARDThemen
-	Log(pagenr_suche); Log(pagenr_andere); Log(pagenr_einslike)
+	PLog(pagenr_suche); PLog(pagenr_andere); PLog(pagenr_einslike)
 	if (pagenr_suche) or (pagenr_andere) or (pagenr_einslike):
-		Log('PageControl: Mehrfach-Seite mit Folgeseiten')
+		PLog('PageControl: Mehrfach-Seite mit Folgeseiten')
 	else:												# keine Folgeseiten -> SinglePage
-		Log('PageControl: Einzelseite, keine Folgeseiten'); Log(cbKey); Log(path); Log(title)
+		PLog('PageControl: Einzelseite, keine Folgeseiten'); PLog(cbKey); PLog(path); PLog(title)
 		oc = SinglePage(title=title, path=path, next_cbKey='SingleSendung', mode=mode, ID=ID) # wir springen direkt 
 		if len(oc) == 1:								# 1 = Home
 			msgH = 'Error'; msg = 'Keine Inhalte gefunden.'		
@@ -1376,13 +1393,13 @@ def PageControl(cbKey, title, path, mode, ID, offset=0):  # ID='ARD', 'POD', mod
 
 	# pagenr_path =  re.findall("&mresults{0,1}=page.(\d+)", page) # lange Form funktioniert nicht
 	pagenr_path =  re.findall("=page.(\d+)", page) # 
-	Log(pagenr_path)
+	PLog(pagenr_path)
 	if pagenr_path:
 		# pagenr_path = repl_dop(pagenr_path) 	# Doppel entfernen (z.B. Zif. 2) - Plex verweigert, warum?
 		del pagenr_path[-1]						# letzten Eintrag entfernen - OK
-	Log(pagenr_path)
+	PLog(pagenr_path)
 	pagenr_path = pagenr_path[0]	# 1. Seitennummer in der Seite - brauchen wir nicht , wir beginnen bei 1 s.u.
-	Log(pagenr_path)		
+	PLog(pagenr_path)		
 	
 	# ab hier Liste der Folgeseiten. Letzten Eintrag entfernen (Mediathek: Rückverweis auf vorige Seite)
 	# Hinw.: die Endmontage muss mit dem Pfad der 1. Seite erfolgen, da ev. Umlaute in den Page-Links 
@@ -1390,7 +1407,7 @@ def PageControl(cbKey, title, path, mode, ID, offset=0):  # ID='ARD', 'POD', mod
 	#	Page-Links unqoted aus, die beim HTTP.Request zum error führen.
 	list = blockextract('class=\"entry\"', page)  # sowohl in A-Z, als auch in Verpasst, 1. Element
 	del list[-1]				# letzten Eintrag entfernen - wie in pagenr_path
-	Log(len(list))
+	PLog(len(list))
 
 	first_site = True								# falls 1. Aufruf ohne Seitennr.: im Pfad ergänzen für Liste		
 	if (pagenr_suche) or (pagenr_andere) or (pagenr_einslike) :		# re.findall s.o.  
@@ -1404,21 +1421,21 @@ def PageControl(cbKey, title, path, mode, ID, offset=0):  # ID='ARD', 'POD', mod
 			if pagenr_einslike:								#  einslike oder Themen
 				path_page1 = path_page1 + 'mcontent=page.1'
 				path_end = '&mcontent=page.'
-		Log('path_end: ' + path_end)
+		PLog('path_end: ' + path_end)
 	else:
 		first_site = False
 		
-	Log(first_site)
+	PLog(first_site)
 	if  first_site == True:										
 		path_page1 = path
 		title = 'Weiter zu Seite 1'
 		next_cbKey = 'SingleSendung'
 			
-		Log(first_site); Log(path_page1); Log(next_cbKey)
+		PLog(first_site); PLog(path_page1); PLog(next_cbKey)
 		oc.add(DirectoryObject(key=Callback(SinglePage, title=title, path=path_page1, next_cbKey=next_cbKey, mode=mode, 
 				ID=ID), title=title, thumb=ICON))
 	else:	# Folgeseite einer Mehrfachseite - keine Liste mehr notwendig
-		Log(first_site)													# wir springen wieder direkt:
+		PLog(first_site)													# wir springen wieder direkt:
 		oc = SinglePage(title=title, path=path, next_cbKey='SingleSendung', mode=mode, ID=ID) 
 	for element in list:	# [@class='entry'] 
 		pagenr_suche = ''; pagenr_andere = ''; title = ''; href = ''
@@ -1427,9 +1444,9 @@ def PageControl(cbKey, title, path, mode, ID, offset=0):  # ID='ARD', 'POD', mod
 		if href == '': 
 			continue							# Satz verwerfen
 			
-		# Log(element); 	# Log(s)  # class="entry" - nur bei Bedarf
+		# PLog(element); 	# PLog(s)  # class="entry" - nur bei Bedarf
 		pagenr =  re.findall("=page.(\d+)", element) 	# einzelne Nummer aus dem Pfad s ziehen	
-		Log(pagenr); 
+		PLog(pagenr); 
 					
 		if (pagenr):							# fehlt manchmal, z.B. bei Suche
 			if href.find('=page.') >=0:			# Endmontage
@@ -1440,20 +1457,20 @@ def PageControl(cbKey, title, path, mode, ID, offset=0):  # ID='ARD', 'POD', mod
 		else:
 			continue							# Satz verwerfen
 			
-		Log('href: ' + href); Log('title: ' + title)
+		PLog('href: ' + href); PLog('title: ' + title)
 		next_cbKey = 'SingleSendung'
 		oc.add(DirectoryObject(key=Callback(SinglePage, title=title, path=href, next_cbKey=next_cbKey, mode=mode, ID=ID), 
 				title=title, thumb=R(ICON_NEXT)))
 	    
-	Log(len(oc))
+	PLog(len(oc))
 	return oc
   
 ####################################################################################################
 @route(PREFIX + '/SinglePage')	# Liste der Sendungen eines Tages / einer Suche 
 								# durchgehend angezeigt (im Original collapsed)
 def SinglePage(title, path, next_cbKey, mode, ID, offset=0):	# path komplett
-	Log('Funktion SinglePage: ' + path)
-	Log('mode: ' + mode); Log('next_cbKey: ' + next_cbKey); Log('ID: ' + str(ID))
+	PLog('Funktion SinglePage: ' + path)
+	PLog('mode: ' + mode); PLog('next_cbKey: ' + next_cbKey); PLog('ID: ' + str(ID))
 	title = title.decode(encoding="utf-8", errors="ignore")
 	oc = ObjectContainer(view_group="InfoList", title1=title, art=ICON)
 	oc = home(cont=oc, ID=ID)					# Home-Button
@@ -1473,21 +1490,21 @@ def SinglePage(title, path, next_cbKey, mode, ID, offset=0):	# path komplett
 		else:
 			page = stringextract('data-ctrl-layoutable', '<!-- **** END **** -->', page)	
 	sendungen = blockextract('class="teaser"', page)	# Sendungsblöcke in PODCAST: 1. teaser=Sendungskopf, 
-	Log('sendungen: ' + str(len(sendungen)))			#   Rest Beiträge - Auswertung in get_sendungen	
-	Log(len(page));													
+	PLog('sendungen: ' + str(len(sendungen)))			#   Rest Beiträge - Auswertung in get_sendungen	
+	PLog(len(page));													
 	if len(sendungen) == 0:								# Fallback 	
 		sendungen = blockextract('class="entry"', page) 				
-		Log('sendungen, Fallback: ' + str(len(sendungen)))
+		PLog('sendungen, Fallback: ' + str(len(sendungen)))
 	
 	send_arr = get_sendungen(oc, sendungen, ID, mode)	# send_arr enthält pro Satz 9 Listen 
 	# Rückgabe send_arr = (send_path, send_headline, send_img_src, send_millsec_duration)
-	#Log(send_arr); Log('Länge send_arr: ' + str(len(send_arr)))
+	#PLog(send_arr); PLog('Länge send_arr: ' + str(len(send_arr)))
 	send_path = send_arr[0]; send_headline = send_arr[1]; send_subtitel = send_arr[2];
 	send_img_src = send_arr[3]; send_img_alt = send_arr[4]; send_millsec_duration = send_arr[5]
 	send_dachzeile = send_arr[6]; send_sid = send_arr[7]; send_teasertext = send_arr[8]
 
-	#Log(send_path); Log(send_arr)
-	Log(len(send_path));
+	#PLog(send_path); PLog(send_arr)
+	PLog(len(send_path));
 	for i in range(len(send_path)):					# Anzahl in allen send_... gleich
 		path = send_path[i]
 		headline = send_headline[i]
@@ -1500,7 +1517,7 @@ def SinglePage(title, path, next_cbKey, mode, ID, offset=0):	# path komplett
 		if not millsec_duration:
 			millsec_duration = "leer"
 		dachzeile = send_dachzeile[i]
-		Log(dachzeile)
+		PLog(dachzeile)
 		sid = send_sid[i]
 		summary = ''
 		if send_teasertext[i] != "":				# teasertext z.B. bei Podcast
@@ -1517,17 +1534,17 @@ def SinglePage(title, path, next_cbKey, mode, ID, offset=0):	# path komplett
 		summary = cleanhtml(summary)
 		subtitel = subtitel.decode(encoding="utf-8", errors="ignore")
 		subtitel = cleanhtml(subtitel)
-		Log(subtitel); Log(dachzeile)
+		PLog(subtitel); PLog(dachzeile)
 		
-		Log('neuer Satz'); Log('path: ' + path); Log(title); Log(headline); Log(img_src); Log(millsec_duration);
-		Log('next_cbKey: ' + next_cbKey); Log('summary: ' + summary);
+		PLog('neuer Satz'); PLog('path: ' + path); PLog(title); PLog(headline); PLog(img_src); PLog(millsec_duration);
+		PLog('next_cbKey: ' + next_cbKey); PLog('summary: ' + summary);
 		if next_cbKey == 'SingleSendung':		# Callback verweigert den Funktionsnamen als Variable
-			Log('path: ' + path); Log('func_path: ' + func_path); Log('subtitel: ' + subtitel); Log(sid)
-			Log(ID)				
+			PLog('path: ' + path); PLog('func_path: ' + func_path); PLog('subtitel: ' + subtitel); PLog(sid)
+			PLog(ID)				
 			if ID == 'PODCAST':					# Icon für Podcast
 				img_src = R(ICON_NOTE)					     
 			if func_path == BASE_URL + path: 	# überspringen - in ThemenARD erscheint der Dachdatensatz nochmal
-				Log('BASE_URL + path == func_path | Satz überspringen');
+				PLog('BASE_URL + path == func_path | Satz überspringen');
 				continue
 			if sid == '':
 				continue
@@ -1538,21 +1555,21 @@ def SinglePage(title, path, next_cbKey, mode, ID, offset=0):	# path komplett
 			# 27.12.2017 Sendungslisten (mode: Sendereihen) können (angehängte) Verweise auf Sendereihen enthalten,
 			#	Bsp. http://www.ardmediathek.de/tv/filme. Erkennung: die sid enthält die bcastId, Bsp. 1933898&bcastId=1933898
 			if '&bcastId=' in path:				#  keine EinzelSendung -> Sendereihe
-				Log('&bcastId= in path: ' + path)
+				PLog('&bcastId= in path: ' + path)
 				if path.startswith('http') == False:	# Bsp. /tv/Film-im-rbb/Sendung?documentId=10009780&bcastId=10009780
 					path = BASE_URL + path
 				oc.add(DirectoryObject(key=Callback(PageControl, path=path, title=headline, cbKey='SinglePage', 
 					mode='Sendereihen', ID=ID), title=headline, tagline=subtitel, summary='Folgeseiten', thumb=img_src))
 			else:								# normale Einzelsendung, Bsp. für sid: 48545158
 				path = BASE_URL + '/play/media/' + sid			# -> *.mp4 (Quali.-Stufen) + master.m3u8-Datei (Textform)
-				Log('Medien-Url: ' + path)
+				PLog('Medien-Url: ' + path)
 				oc.add(DirectoryObject(key=Callback(SingleSendung, path=path, title=headline, thumb=img_src, 
 					duration=millsec_duration, tagline=subtitel, ID=ID, summary=summary), title=headline, tagline=subtitel, 
 					summary=summary, thumb=img_src))
 		if next_cbKey == 'SinglePage':						# mit neuem path nochmal durchlaufen
-			Log('next_cbKey: SinglePage in SinglePage')
+			PLog('next_cbKey: SinglePage in SinglePage')
 			path = BASE_URL + path
-			Log('path: ' + path);
+			PLog('path: ' + path);
 			if mode == 'Sendereihen':			# Seitenkontrolle erforderlich, dto. Rubriken in Podcasts
 				oc.add(DirectoryObject(key=Callback(PageControl, path=path, title=headline, cbKey='SinglePage', 
 					mode='Sendereihen', ID=ID), title=headline, tagline=subtitel, summary=summary, thumb=img_src))
@@ -1561,12 +1578,12 @@ def SinglePage(title, path, next_cbKey, mode, ID, offset=0):	# path komplett
 					mode=mode, ID=ID), title=headline, tagline=subtitel, summary=summary, thumb=img_src))
 		if next_cbKey == 'PageControl':		
 			path = BASE_URL + path
-			Log('path: ' + path);
-			Log('next_cbKey: PageControl in SinglePage')
+			PLog('path: ' + path);
+			PLog('next_cbKey: PageControl in SinglePage')
 			oc.add(DirectoryObject(key=Callback(PageControl, path=path, title=headline, cbKey='SingleSendung', 
 				mode='Sendereihen', ID=ID), title=headline, tagline=subtitel, summary=summary, thumb=img_src))
 
-	Log(len(oc))	# Anzahl Einträge
+	PLog(len(oc))	# Anzahl Einträge
 						
 	return oc
 ####################################################################################################
@@ -1583,8 +1600,8 @@ def SingleSendung(path, title, thumb, duration, summary, tagline, ID, offset=0):
 	title = title.decode(encoding="utf-8", errors="ignore")	# ohne: Exception All strings must be XML compatible
 	title_org=title; summary_org=summary; tagline_org=tagline	# Backup 
 
-	Log('SingleSendung path: ' + path)					# z.B. http://www.ardmediathek.de/play/media/11177770
-	Log('ID: ' + str(ID))
+	PLog('SingleSendung path: ' + path)					# z.B. http://www.ardmediathek.de/play/media/11177770
+	PLog('ID: ' + str(ID))
 	
 	oc = ObjectContainer(view_group="InfoList", title1=title, art=ICON)
 	
@@ -1593,7 +1610,7 @@ def SingleSendung(path, title, thumb, duration, summary, tagline, ID, offset=0):
 		client = ''
 	if client.find ('Plex Home Theater'): 
 		oc = home(cont=oc, ID=ID)						# Home-Button macht bei PHT die Trackliste unbrauchbar 
-	# Log(path)
+	# PLog(path)
 	
 	if ID == 'PODCAST':
 		Format = 'Podcast-Format: MP3'					# Verwendung in summmary
@@ -1603,20 +1620,20 @@ def SingleSendung(path, title, thumb, duration, summary, tagline, ID, offset=0):
 	# Bei Podcasts enthält path i.d.R. 1 Link zur Seite mit einer mp3-Datei, bei Podcasts von PodFavoriten 
 	# wird der mp3-Link	direkt in path übergeben.
 	if path.endswith('.mp3') == False:
-		Log('vor parseLinks_Mp4_Rtmp')
+		PLog('vor parseLinks_Mp4_Rtmp')
 		page, msg = get_page(path=path)				# Absicherung gegen Connect-Probleme. Page=Textformat
 		if page == '':
 			return ObjectContainer(header='Error', message=msg)
 		link_path,link_img, m3u8_master, geoblock = parseLinks_Mp4_Rtmp(page) # link_img kommt bereits mit thumb, außer Podcasts						
-		Log('m3u8_master: ' + m3u8_master); Log(link_img); Log(link_path); 
+		PLog('m3u8_master: ' + m3u8_master); PLog(link_img); PLog(link_path); 
 		if thumb == None or thumb == '': 
 			thumb = link_img
 
 		if link_path == []:	      		# keine Videos gefunden		
-			Log('link_path == []') 		 
+			PLog('link_path == []') 		 
 			msgH = 'keine Videoquelle gefunden - Abbruch'; msg = 'keine Videoquelle gefunden - Abbruch. Seite: ' + path;
 			return ObjectContainer(header=msgH, message=msg)
-		Log('geoblock: ' + geoblock)
+		PLog('geoblock: ' + geoblock)
 		if geoblock == 'true':			# Info-Anhang für summary 
 			geoblock = ' | Geoblock!'
 		else:
@@ -1637,7 +1654,7 @@ def SingleSendung(path, title, thumb, duration, summary, tagline, ID, offset=0):
 			thumb=thumb, resolution=''))			
 		cont = Parseplaylist(oc, m3u8_master, thumb, geoblock)	# Liste der zusätzlichen einzelnen Auflösungen 
 		#del link_path[0]								# master.m3u8 entfernen, Rest bei m3u8_master: mp4-Links
-		Log(cont)  										
+		PLog(cont)  										
 	 
 	# ab hier Auswertung der restlichen mp4-Links bzw. rtmp-Links (aus parseLinks_Mp4_Rtmp)
 	# Format: 0|http://mvideos.daserste.de/videoportal/Film/c_610000/611560/format706220.mp4
@@ -1648,7 +1665,7 @@ def SingleSendung(path, title, thumb, duration, summary, tagline, ID, offset=0):
 	for i in range(len(link_path)):
 		s = link_path[i]
 		href = s.split('|')[1].strip() # Bsp.: auto|http://www.hr.. / 0|http://pd-videos.daserste.de/..
-		Log('s: ' + s)
+		PLog('s: ' + s)
 		if s[0:4] == "auto":	# m3u8_master bereits entfernt. Bsp. hier: 	
 			# http://tagesschau-lh.akamaihd.net/z/tagesschau_1@119231/manifest.f4m?b=608,1152,1992,3776 
 			#	Platzhalter für künftige Sendungen, z.B. Tagesschau (Meldung in Original-Mediathek:
@@ -1685,7 +1702,7 @@ def SingleSendung(path, title, thumb, duration, summary, tagline, ID, offset=0):
 			download_list.append(title + '#' + url)
 			
 
-		Log('title: ' + title); Log('url: ' + url); 
+		PLog('title: ' + title); PLog('url: ' + url); 
 		if url:
 			if '.m3u8' in url:				# master.m3u8 überspringen, oben bereits abgehandelt
 				continue
@@ -1707,7 +1724,7 @@ def SingleSendung(path, title, thumb, duration, summary, tagline, ID, offset=0):
 					url = url.replace('https', 'http')	
 					oc.add(CreateVideoClipObject(url=url, title=title, 
 						summary=summary+geoblock, meta=path, thumb=thumb, tagline='leer', duration='leer', resolution='leer'))
-	Log(download_list)
+	PLog(download_list)
 	if 	download_list:			
 		# high=-1: letztes Video bisher höchste Qualität
 		if summary_org == None:		# Absicherungen für MakeDetailText
@@ -1716,7 +1733,7 @@ def SingleSendung(path, title, thumb, duration, summary, tagline, ID, offset=0):
 			tagline_org=''
 		if thumb == None:
 			thumb=''		
-		Log(title);Log(summary_org);Log(tagline_org);Log(thumb);
+		PLog(title);PLog(summary_org);PLog(tagline_org);PLog(thumb);
 		oc = test_downloads(oc,download_list,title_org,summary_org,tagline_org,thumb,high=-1)  # Downloadbutton(s)
 	return oc
 
@@ -1724,21 +1741,21 @@ def SingleSendung(path, title, thumb, duration, summary, tagline, ID, offset=0):
 # test_downloads: prüft ob curl/wget-Downloads freigeschaltet sind + erstellt den Downloadbutton
 # high (int): Index für einzelne + höchste Video-Qualität in download_list
 def test_downloads(oc,download_list,title_org,summary_org,tagline_org,thumb,high):  # Downloadbuttons (ARD + ZDF)
-	Log('test_downloads')
-	Log(Prefs['pref_use_downloads']) 							# Voreinstellung: False 
+	PLog('test_downloads')
+	PLog(Prefs['pref_use_downloads']) 							# Voreinstellung: False 
 	if Prefs['pref_use_downloads'] == True and Prefs['pref_curl_download_path']:
-		# Log(Prefs['pref_show_qualities'])
+		# PLog(Prefs['pref_show_qualities'])
 		if Prefs['pref_show_qualities'] == False:				# nur 1 (höchste) Qualität verwenden
 			download_items = []
 			download_items.append(download_list.pop(high))									 
 		else:	
 			download_items = download_list						# ganze Liste verwenden
-		# Log(download_items)
+		# PLog(download_items)
 		
 		i=0
 		for item in download_items:
 			quality,url = item.split('#')
-			Log(url); Log(quality); Log(title_org)
+			PLog(url); PLog(quality); PLog(title_org)
 			if url.find('.m3u8') == -1 and url.find('rtmp://') == -1:
 				# detailtxt =  Begleitdatei mit Textinfos zum Video / Podcast:
 				detailtxt = MakeDetailText(title=title_org,thumb=thumb,quality=quality,
@@ -1764,7 +1781,7 @@ def test_downloads(oc,download_list,title_org,summary_org,tagline_org,thumb,high
 	
 #-----------------------
 def MakeDetailText(title, summary,tagline,quality,thumb,url):	# Textdatei für Download-Video / -Podcast
-	Log('MakeDetailText')
+	PLog('MakeDetailText')
 		
 	detailtxt = ''
 	detailtxt = detailtxt + "%15s" % 'Titel: ' + "'"  + title + "'"  + '\r\n' 
@@ -1793,13 +1810,13 @@ def MakeDetailText(title, summary,tagline,quality,thumb,url):	# Textdatei für D
 #
 
 def DownloadExtern(url, title, dest_path, key_detailtxt):  # Download mittels curl/wget
-	Log('DownloadExtern: ' + title)
-	Log(url); Log(dest_path); Log(key_detailtxt)
+	PLog('DownloadExtern: ' + title)
+	PLog(url); PLog(dest_path); PLog(key_detailtxt)
 	title=title.decode(encoding="utf-8", errors="ignore")	
 	
 	if Dict['PIDcurl']:								# ungewollten Wiedereintritt abweisen 
-		Log('PIDcurl: %s' % Dict['PIDcurl'])
-		Log('PIDcurl = %s | Blocking DownloadExtern' % Dict['PIDcurl'])
+		PLog('PIDcurl: %s' % Dict['PIDcurl'])
+		PLog('PIDcurl = %s | Blocking DownloadExtern' % Dict['PIDcurl'])
 		Dict['PIDcurl'] = ''						# löschen für manuellen Aufruf 
 		# Für PHT Info erst hier nach autom. Wiedereintritt nach Popen möglich:
 		title1 = 'curl/wget: Download erfolgreich gestartet'
@@ -1839,28 +1856,28 @@ def DownloadExtern(url, title, dest_path, key_detailtxt):  # Download mittels cu
 	dfname = dfname + suffix							# suffix: '.mp4', '.webm', oder '.mp3'
 	
 	pathtextfile = os.path.join(dest_path, textfile)	# kompl. Speicherpfad für Textfile
-	Log(pathtextfile)
+	PLog(pathtextfile)
 	detailtxt = Dict[key_detailtxt]					
 	storetxt = 'Details zum ' + dtyp +  dfname + ':\r\n\r\n' + detailtxt	
 			
-	Log('Client-Platform: ' + str(Client.Platform))
-	Log(sys.platform)
+	PLog('Client-Platform: ' + str(Client.Platform))
+	PLog(sys.platform)
 	try:
 		Dict['PIDcurl'] = ''
 		Core.storage.save(pathtextfile, storetxt)			# Text speichern
 		
 		AppPath = Prefs['pref_curl_path']
 		i = os.path.exists(AppPath)					# Existenz curl/wget prüfen
-		Log(AppPath); Log(i)
+		PLog(AppPath); PLog(i)
 		if AppPath == '' or i == False:
 			msg='Pfad zu curl/wget fehlt oder curl/wget nicht gefunden'
-			Log(msg)
+			PLog(msg)
 			return ObjectContainer(header='Error', message=msg)
 			
 		# i = os.access(curl_dest_path, os.W_OK)		# Zielverz. prüfen - nicht relevant für curl/wget
 														# 	Anwender muss Schreibrecht sicherstellen
 		curl_fullpath = os.path.join(dest_path, dfname)	# kompl. Speicherpfad für Video/Podcast
-		Log(curl_fullpath)
+		PLog(curl_fullpath)
 
 		# 08.06.2017 wget-Alternative wg. curl-Problem auf Debian-System (Forum: 
 		#	https://forums.plex.tv/discussion/comment/1454827/#Comment_1454827
@@ -1871,20 +1888,20 @@ def DownloadExtern(url, title, dest_path, key_detailtxt):  # Download mittels cu
 		# http://stackoverflow.com/questions/3516007/run-process-and-dont-wait
 		#	creationflags=DETACHED_PROCESS nur unter Windows
 		if AppPath.find('curl') > 0:									# curl-Call
-			Log('%s %s %s %s %s' % (AppPath, url, "-o", curl_fullpath, "-k"))	
+			PLog('%s %s %s %s %s' % (AppPath, url, "-o", curl_fullpath, "-k"))	
 			sp = subprocess.Popen([AppPath, url, "-o", curl_fullpath, "-k"])	# OK, wartet nicht (ohne p.communicate())
 			# sp = subprocess.Popen([AppPath, url, "-N", "-o", curl_fullpath])	# Buffering für curl abgeschaltet
 		else:															# wget-Call
-			Log('%s %s %s %s %s %s' % (AppPath, "--no-use-server-timestamps", "-q", "-O", curl_fullpath, url))	
+			PLog('%s %s %s %s %s %s' % (AppPath, "--no-use-server-timestamps", "-q", "-O", curl_fullpath, url))	
 			sp = subprocess.Popen([AppPath, "--no-check-certificate", "--no-use-server-timestamps", "-q", "-O", curl_fullpath, url])
 			
 		msgH = 'curl/wget: Download erfolgreich gestartet'
-		Log('sp = ' + str(sp))
+		PLog('sp = ' + str(sp))
 	
 		if str(sp).find('object at') > 0:  				# subprocess.Popen object OK
 			Dict['PIDcurl'] = sp.pid					# PID zum Abgleich gegen Wiederholung sichern
-			Log('PIDcurl neu: %s' % Dict['PIDcurl'])
-			Log(msgH)			
+			PLog('PIDcurl neu: %s' % Dict['PIDcurl'])
+			PLog(msgH)			
 			tagline = 'Zusatz-Infos in Textdatei gespeichert:' + textfile
 			summary = 'Ablage: ' + curl_fullpath
 			summary = summary.decode(encoding="utf-8", errors="ignore")	
@@ -1901,7 +1918,7 @@ def DownloadExtern(url, title, dest_path, key_detailtxt):  # Download mittels cu
 	except Exception as exception:
 		summary = str(exception)
 		summary = summary.decode(encoding="utf-8", errors="ignore")
-		Log(summary)		
+		PLog(summary)		
 		tagline='Download fehlgeschlagen'
 		# bei Fehlschlag gibt PHT die message aus (im Gegensatz zu oben):
 		if 'Home Theater' in str(Client.Platform):	# GetDirectory failed nach Info
@@ -1913,10 +1930,10 @@ def DownloadExtern(url, title, dest_path, key_detailtxt):  # Download mittels cu
 #---------------------------
 @route(PREFIX + '/DownloadsTools')		# Tools: Einstellungen,  Bearbeiten, Verschieben, Löschen
 def DownloadsTools():
-	Log('DownloadsTools');
+	PLog('DownloadsTools');
 
 	path = Prefs['pref_curl_download_path']
-	Log(path)
+	PLog(path)
 	dirlist = []
 	if path == None or path == '':									# Existenz Verz. prüfen, falls vorbelegt
 		title1 = 'Downloadverzeichnis noch nicht festgelegt'
@@ -1927,7 +1944,7 @@ def DownloadsTools():
 		else:
 			dirlist = os.listdir(path)						# Größe Inhalt? 		
 			
-	Log(len(dirlist))
+	PLog(len(dirlist))
 	mpcnt=0; vidsize=0
 	for entry in dirlist:
 		if entry.find('.mp4') > 0 or entry.find('.webm') > 0 or entry.find('.mp3') > 0:
@@ -1957,7 +1974,7 @@ def DownloadsTools():
 	oc.add(DirectoryObject(key=Callback(DirectoryNavigator,settingKey = 'pref_curl_download_path', fileFilter='DIR',
 		newDirectory=s), title = title, tagline=tagline, summary=summary, thumb = R(ICON_DOWNL_DIR)))
 
-	Log(Prefs['pref_VideoDest_path'])
+	PLog(Prefs['pref_VideoDest_path'])
 	if Prefs['pref_VideoDest_path'] == None:			# Vorgabe Medienverzeichnis (Movieverz), falls leer
 		data = HTTP.Request("%s/library/sections" % (myhost), immediate=True).content # . ermitteln 
 		data = data.strip() 							# ohne strip fehlt unter Windows alles nach erstem /r/n
@@ -1970,7 +1987,7 @@ def DownloadsTools():
 		movie_path = None								# wird ROOT_DIRECTORY in DirectoryNavigator
 	else:
 		movie_path = True
-	Log(movie_path)	
+	PLog(movie_path)	
 	videst = Prefs['pref_VideoDest_path']				# Einstellungen: Pfad Verschiebe-Verz.
 	title = 'Einstellungen: Zielverzeichnis zum Verschieben festlegen/ändern (%s)' % (videst)	
 	title=title.decode(encoding="utf-8", errors="ignore")
@@ -1980,7 +1997,7 @@ def DownloadsTools():
 	oc.add(DirectoryObject(key=Callback(DirectoryNavigator,settingKey = 'pref_VideoDest_path', fileFilter='DIR',
 		newDirectory=videst), title = title, tagline=tagline, summary=summary, thumb = R(ICON_MOVEDIR_DIR)))
 		
-	Log(Prefs['pref_podcast_favorits'])					# Pfad zur persoenlichen Podcast-Favoritenliste
+	PLog(Prefs['pref_podcast_favorits'])					# Pfad zur persoenlichen Podcast-Favoritenliste
 	s =  Prefs['pref_podcast_favorits']								
 	title = 'Einstellungen: persönliche Podcast-Favoritenliste festlegen/ändern (%s)' %s			
 	title=title.decode(encoding="utf-8", errors="ignore")
@@ -2020,7 +2037,7 @@ def DownloadsTools():
 #---------------------------
 @route(PREFIX + '/DownloadsList')	 	# Downloads im Downloadverzeichnis zur Bearbeitung listen
 def DownloadsList():
-	Log('DownloadsList')	
+	PLog('DownloadsList')	
 	path = Prefs['pref_curl_download_path']
 	
 	dirlist = []
@@ -2034,7 +2051,7 @@ def DownloadsList():
 			dirlist = os.listdir(path)						# Größe Inhalt? 		
 	dlpath = path
 
-	Log(len(dirlist))
+	PLog(len(dirlist))
 	mpcnt=0; vidsize=0
 	for entry in dirlist:
 		if entry.find('.mp4') > 0 or entry.find('.webm') > 0 or entry.find('.mp3') > 0:
@@ -2059,11 +2076,11 @@ def DownloadsList():
 			fname =  entry							# Dateiname 
 			basename = os.path.splitext(fname)[0]	# ohne Extension
 			ext =     os.path.splitext(fname)[1]	# Extension
-			Log(fname); Log(basename); Log(ext)
+			PLog(fname); PLog(basename); PLog(ext)
 			txtfile = basename + '.txt'
 			txtpath = os.path.join(path, txtfile)   # kompl. Pfad
-			Log('entry: ' + entry)
-			Log('txtpath: ' + txtpath)
+			PLog('entry: ' + entry)
+			PLog('txtpath: ' + txtpath)
 			if os.path.exists(txtpath):
 				txt = Core.storage.load(txtpath)		# Beschreibung laden - fehlt bei Sammeldownload
 			else:
@@ -2087,7 +2104,7 @@ def DownloadsList():
 				summary = 'Beschreibung fehlt - Abspielen nicht möglich'
 				tagline = 'Beschreibung fehlt - Beschreibung gelöscht, Sammeldownload oder TVLive-Video'
 				
-			Log(httpurl); Log(tagline); Log(quality); # Log(txt); 			
+			PLog(httpurl); PLog(tagline); PLog(quality); # PLog(txt); 			
 			if httpurl.endswith('mp3'):
 				oc_title = 'Bearbeiten: Podcast | ' + title
 				thumb = R(ICON_NOTE)
@@ -2112,7 +2129,7 @@ def DownloadsList():
 #	httpurl=HTTP-Videoquelle, path=Videodatei (Name), dlpath=Downloadverz., txtpath=Textfile (kompl. Pfad)
 #	
 def VideoTools(httpurl,path,dlpath,txtpath,title,summary,thumb,tagline):
-	Log('VideoTools: ' + path)
+	PLog('VideoTools: ' + path)
 	
 	title=title.decode(encoding="utf-8", errors="ignore") 
 	title_org = title
@@ -2161,8 +2178,8 @@ def VideoTools(httpurl,path,dlpath,txtpath,title,summary,thumb,tagline):
 #---------------------------
 @route(PREFIX + '/DownloadsDelete')	# 			# Downloadverzeichnis leeren (einzeln/komplett)
 def DownloadsDelete(dlpath, single):
-	Log('DownloadsDelete: ' + dlpath)
-	Log('single=' + single)
+	PLog('DownloadsDelete: ' + dlpath)
+	PLog('single=' + single)
 	oc = ObjectContainer(view_group="InfoList", title1='Download-Tools', art=ICON)
 	oc = home(cont=oc, ID=NAME)					# Home-Button	
 
@@ -2179,7 +2196,7 @@ def DownloadsDelete(dlpath, single):
 			if os.path.isfile(txturl) == True:							
 				os.remove(txturl)				# Textdatei löschen
 			error_txt = 'Datei gelöscht: ' + dlpath
-		Log(error_txt)			 			 	 
+		PLog(error_txt)			 			 	 
 		title = 'Löschen erfolgreich | zurück zu den Download-Tools'
 		title =  title.decode(encoding="utf-8", errors="ignore")
 		tagline = error_txt
@@ -2188,7 +2205,7 @@ def DownloadsDelete(dlpath, single):
 			tagline=tagline))
 		return oc
 	except Exception as exception:
-		Log(str(exception))
+		PLog(str(exception))
 		title = 'Fehler | zurück zu den Download-Tools'
 		title =  title.decode(encoding="utf-8", errors="ignore")
 		tagline='Löschen fehlgeschlagen | ' + str(exception)
@@ -2202,8 +2219,8 @@ def DownloadsDelete(dlpath, single):
 # dfname=Videodatei, textname=Textfile,  dlpath=Downloadverz., destpath=Zielverz.
 #
 def DownloadsMove(dfname, textname, dlpath, destpath, single):
-	Log('DownloadsMove: ');Log(dfname);Log(textname);Log(dlpath);Log(destpath);
-	Log('single=' + single)
+	PLog('DownloadsMove: ');PLog(dfname);PLog(textname);PLog(dlpath);PLog(destpath);
+	PLog('single=' + single)
 
 	oc = ObjectContainer(view_group="InfoList", title1='Download-Tools', art=ICON)
 	oc = home(cont=oc, ID=NAME)					# Home-Button	
@@ -2222,7 +2239,7 @@ def DownloadsMove(dfname, textname, dlpath, destpath, single):
 			for i in os.listdir(dlpath):
 				src = os.path.join(dlpath, i)
 				dest = os.path.join(destpath, i)							
-				Log(src); Log(dest); 
+				PLog(src); PLog(dest); 
 				
 				if os.path.isfile(src) == True:							
 					shutil.copy(src, destpath)	# Datei kopieren	
@@ -2234,7 +2251,7 @@ def DownloadsMove(dfname, textname, dlpath, destpath, single):
 			textdest = os.path.join(destpath, textname)	
 			videosrc = os.path.join(dlpath, dfname)
 			videodest = os.path.join(destpath, dfname)		
-			Log(videosrc); Log(videodest);
+			PLog(videosrc); PLog(videodest);
 								
 			if os.path.isfile(textsrc) == True:	# Quelldatei testen						
 				shutil.copy(textsrc, textdest)		
@@ -2243,7 +2260,7 @@ def DownloadsMove(dfname, textname, dlpath, destpath, single):
 				shutil.copy(videosrc, videodest)				
 				os.remove(videosrc)				# Videodatei dto.
 			error_txt = 'Video + Textdatei verschoben: ' + 	dfname				 			 	 
-		Log(error_txt)			 			 	 		
+		PLog(error_txt)			 			 	 		
 		title = 'Verschieben erfolgreich | zurück zu den Download-Tools'
 		title =  title.decode(encoding="utf-8", errors="ignore")
 		title =  title.decode(encoding="utf-8", errors="ignore")
@@ -2254,7 +2271,7 @@ def DownloadsMove(dfname, textname, dlpath, destpath, single):
 		return oc
 
 	except Exception as exception:
-		Log(str(exception))
+		PLog(str(exception))
 		title = 'Fehler | zurück zu den Download-Tools'
 		title =  title.decode(encoding="utf-8", errors="ignore")
 		tagline='Verschieben fehlgeschlagen | ' + str(exception)
@@ -2265,8 +2282,8 @@ def DownloadsMove(dfname, textname, dlpath, destpath, single):
 ####################################################################################################
 def parseLinks_Mp4_Rtmp(page):		# extrahiert aus Mediendatei (Text) .mp4- und rtmp-Links (Aufrufer 
 									# SingleSendung). Bsp.: http://www.ardmediathek.de/play/media/35771780
-	Log('parseLinks_Mp4_Rtmp')		
-	#Log('parseLinks_Mp4_Rtmp: ' + page)	# bei Bedarf
+	PLog('parseLinks_Mp4_Rtmp')		
+	#PLog('parseLinks_Mp4_Rtmp: ' + page)	# bei Bedarf
 	
 	if page.find('_previewImage') >= 0:
 		#link_img = teilstring(page, 'http://www.ardmediathek.de/image', '\",\"_subtitleUrl')
@@ -2281,27 +2298,27 @@ def parseLinks_Mp4_Rtmp(page):		# extrahiert aus Mediendatei (Text) .mp4- und rt
 	
 	if page.find('\"_quality\":') >= 0:
 		s = page.split('\"_quality\":')	
-		# Log(s)							# nur bei Bedarf
+		# PLog(s)							# nur bei Bedarf
 		del s[0]							# 1. Teil entfernen - enthält img-Quelle (s.o.)
 		
 		for i in range(len(s)):
 			s1 =  s[i]
 			s2 = ''
-			Log(s1)						# Bsp.: 1,"_server":"","_cdn":"akamai","_stream":"http://avdlswr-..
+			PLog(s1)						# Bsp.: 1,"_server":"","_cdn":"akamai","_stream":"http://avdlswr-..
 				
 			if s1.find('rtmp://') >= 0: # rtmp-Stream 
-				Log('s1: ' + s1)
+				PLog('s1: ' + s1)
 				t1 = stringextract('server\":\"', '\",\"_cdn\"', s1) 
 				t2 = stringextract( '\"_stream\":\"', '\"}', s1) 
 				s2 = t1 + t2	# beide rtmp-Teile verbinden
-				#Log(s2)				# nur bei Bedarf
+				#PLog(s2)				# nur bei Bedarf
 			else:						# http-Links, auch Links, die mit // beginnen
 				s2 = stringextract('stream\":\"','\"', s1)
 				if s2.startswith('//'):				# 12.09.2017: WDR-Links ohne http:
 					s2 = 'http:' + s2
 				if 'master.m3u8' in s1:
 					m3u8_master = s2
-			Log(s2); Log(len(s2))				# nur bei Bedarf
+			PLog(s2); PLog(len(s2))				# nur bei Bedarf
 				
 							
 			if len(s2) > 9:						# schon url gefunden? Dann Markierung ermitteln
@@ -2313,12 +2330,12 @@ def parseLinks_Mp4_Rtmp(page):		# extrahiert aus Mediendatei (Text) .mp4- und rt
 								
 				link = mark + s2				# Qualität voranstellen			
 				link_path.append(link)
-				Log(mark); Log(s2); Log(link); # Log(link_path)
+				PLog(mark); PLog(s2); PLog(link); # PLog(link_path)
 			
-	#Log(link_path)				
+	#PLog(link_path)				
 	link_path = list(set(link_path))			# Doppel entfernen (gesehen: 0, 1, 2 doppelt)
 	link_path.sort()							# Sortierung - Original Bsp.: 0,1,2,0,1,2,3
-	Log(link_path); Log(len(link_path))					
+	PLog(link_path); PLog(len(link_path))					
 		
 	return link_path, link_img, m3u8_master, geoblock				 		
 		
@@ -2330,11 +2347,11 @@ def get_sendungen(container, sendungen, ID, mode): # Sendungen ausgeschnitten mi
 	#	nur linklist fehlt )
 	# Die Rückgabe-Liste send_arr nimmt die Datensätze auf (path, headline usw.)
 	# ab 02.04.2017: ID=PODCAST	- bei Sendereihen enthält der 1. Satz Bild + Teasertext
-	Log('get_sendungen'); Log(ID); Log(mode); 
+	PLog('get_sendungen'); PLog(ID); PLog(mode); 
 
 	img_src_header=''; img_alt_header=''; teasertext_header=''; teasertext=''
 	if ID == 'PODCAST' and mode == 'Sendereihen':							# PODCAST: Bild + teasertext nur im Kopf vorhanden
-		# Log(sendungen[0])		# bei Bedarf
+		# PLog(sendungen[0])		# bei Bedarf
 		if sendungen[0].find('urlScheme') >= 0:	# Bild ermitteln, versteckt im img-Knoten
 			text = stringextract('urlScheme', '/noscript', sendungen[0])
 			img_src_header, img_alt_header = img_urlScheme(text, 320, ID) # Format quadratisch bei Podcast
@@ -2356,8 +2373,8 @@ def get_sendungen(container, sendungen, ID, mode): # Sendungen ausgeschnitten mi
 			if  s.find('<h4 class=\"headline\">') >= 0:  # in Rubriken weder subtitle noch dachzeile vorhanden
 				found_sendung = True
 				
-		Log(found_sendung)
-		# Log(s)				# bei Bedarf
+		PLog(found_sendung)
+		# PLog(s)				# bei Bedarf
 		if found_sendung:				
 			dachzeile = re.search("<p class=\"dachzeile\">(.*?)</p>\s+?", s)  # Bsp. <p class="dachzeile">Weltspiegel</p>
 			if dachzeile:									# fehlt komplett bei ARD_SENDUNG_VERPASST
@@ -2383,21 +2400,21 @@ def get_sendungen(container, sendungen, ID, mode): # Sendungen ausgeschnitten mi
 			else:
 				subtitel =""
 								
-			Log(headline)
+			PLog(headline)
 			send_duration = subtitel						
 			send_date = stringextract('class=\"date\">', '</span>', s) # auch Uhrzeit möglich
-			Log(subtitel)
-			Log(send_date)
+			PLog(subtitel)
+			PLog(send_date)
 			if send_date and subtitel:
 				subtitel = send_date + ' Uhr | ' + subtitel				
 				
 			if send_duration.find('Min.') >= 0:			# Bsp. 20 Min. | UT
 				send_duration = send_duration.split('Min.')[0]
 				duration = send_duration.split('Min.')[0]
-				#Log(duration)
+				#PLog(duration)
 				if duration.find('|') >= 0:			# Bsp. 17.03.2016 | 29 Min. | UT 
 						duration = duration.split('|')[1]
-				#Log(duration)
+				#PLog(duration)
 				millsec_duration = CalculateDuration(duration)
 			else:
 				millsec_duration = ''
@@ -2408,15 +2425,15 @@ def get_sendungen(container, sendungen, ID, mode): # Sendungen ausgeschnitten mi
 				id_path = stringextract('href=\"', '\"', extr_path)
 			else:
 				extr_path = stringextract('class=\"media mediaA\"', '/noscript', s)
-				# Log(extr_path)
+				# PLog(extr_path)
 				id_path = stringextract('href=\"', '\"', extr_path)
 			id_path = unescape(id_path)
 			if id_path.find('documentId=') >= 0:		# documentId am Pfadende
 				sid = id_path.split('documentId=')[1]	# ../Video-Podcast?bcastId=7262908&documentId=24666340
 				
-			Log('sid: ' + sid)
+			PLog('sid: ' + sid)
 			path = id_path	# korrigiert in SinglePage für Einzelsendungen in  '/play/media/' + sid
-			Log(path)
+			PLog(path)
 							
 			if s.find('urlScheme') >= 0:			# Bild ermitteln, versteckt im img-Knoten
 				text = stringextract('urlScheme', '/noscript', s)
@@ -2432,10 +2449,10 @@ def get_sendungen(container, sendungen, ID, mode): # Sendungen ausgeschnitten mi
 			if path == '':								# Satz nicht verwendbar
 					continue							
 						
-			Log('neuer Satz')
-			Log(sid); Log(id_path); Log(path); Log(img_src); Log(img_alt); Log(headline);  
-			Log(subtitel); Log(send_duration); Log(millsec_duration); 
-			Log(dachzeile); Log(teasertext); 
+			PLog('neuer Satz')
+			PLog(sid); PLog(id_path); PLog(path); PLog(img_src); PLog(img_alt); PLog(headline);  
+			PLog(subtitel); PLog(send_duration); PLog(millsec_duration); 
+			PLog(dachzeile); PLog(teasertext); 
 
 			send_path.append(path)			# erst die Listen füllen
 			send_headline.append(headline)
@@ -2450,13 +2467,13 @@ def get_sendungen(container, sendungen, ID, mode): # Sendungen ausgeschnitten mi
 											# dann der komplette Listen-Satz ins Array		
 	send_arr = [send_path, send_headline, send_subtitel, send_img_src, send_img_alt, send_millsec_duration, 
 		send_dachzeile, send_sid, send_teasertext]
-	Log(len(send_path))	 # Anzahl send_path = Anzahl Sätze		
+	PLog(len(send_path))	 # Anzahl send_path = Anzahl Sätze		
 	return send_arr
 #-------------------
 # def img_urlScheme: img-Url ermitteln für get_sendungen, ARDRubriken. text = string, dim = Dimension
 def img_urlScheme(text, dim, ID):
-	Log('img_urlScheme: ' + text[0:60])
-	Log(dim)
+	PLog('img_urlScheme: ' + text[0:60])
+	PLog(dim)
 	
 	pos = 	text.find('class=\"mediaCon\">')			# img erst danach
 	if pos >= 0:
@@ -2480,12 +2497,12 @@ def img_urlScheme(text, dim, ID):
 			img_src = img_src.replace('16x9', '16x16')	# Sender liefert Ersatz, falls n.v.
 		if '?mandant=ard' in text:						# Anhang bei manchen Bildern
 			img_src =img_src + '?mandant=ard' 
-		Log('img_urlScheme: ' + img_src)
+		PLog('img_urlScheme: ' + img_src)
 		img_alt = img_alt.decode(encoding="utf-8", errors="ignore")	 # kommt vor:  utf8-decode-error bate 0xc3
-		Log('img_urlScheme: ' + img_alt[0:40])
+		PLog('img_urlScheme: ' + img_alt[0:40])
 		return img_src, img_alt
 	else:
-		Log('img_urlScheme: leer')
+		PLog('img_urlScheme: leer')
 		return '', ''		
 	
 ####################################################################################################
@@ -2493,14 +2510,14 @@ def img_urlScheme(text, dim, ID):
 def SenderLiveListePre(title, offset=0):	# Vorauswahl: Überregional, Regional, Privat
 	Log.Debug('SenderLiveListePre')
 	playlist = Resource.Load(PLAYLIST)	# lokale XML-Datei (Pluginverz./Resources)
-	#Log(playlist)		# nur bei Bedarf
+	#PLog(playlist)		# nur bei Bedarf
 
 	oc = ObjectContainer(view_group="InfoList", title1='TV-Livestreams', title2=title, art = ICON)	
 	oc = home(cont=oc, ID=NAME)				# Home-Button	
 		
 	doc = HTML.ElementFromString(playlist)		# unterschlägt </link>	
 	liste = doc.xpath('//channels/channel')
-	Log(len(liste))
+	PLog(len(liste))
 	
 	for element in liste:
 		element_str = HTML.StringFromElement(element)
@@ -2511,7 +2528,7 @@ def SenderLiveListePre(title, offset=0):	# Vorauswahl: Überregional, Regional, 
 			img = R(img)
 		else:
 			img = img
-		Log(name); Log(img); # Log(element_str);  # nur bei Bedarf	
+		PLog(name); PLog(img); # PLog(element_str);  # nur bei Bedarf	
 		oc.add(DirectoryObject(key=Callback(SenderLiveListe, title=name, listname=name),
 			title='Live-Sender: ' + name, thumb=img, tagline=''))
 
@@ -2536,13 +2553,13 @@ def SenderLiveListePre(title, offset=0):	# Vorauswahl: Überregional, Regional, 
 #-----------------------------------------------------------------------------------------------------
 @route(PREFIX + '/EPG_Sender')		# EPG SenderListe , EPG-Daten holen in Modul EPG.py, Anzeige in EPG_Show
 def EPG_Sender(title):
-	Log('EPG_Sender')
+	PLog('EPG_Sender')
 	
 	oc = ObjectContainer(view_group="InfoList", title1='EPG', title2='EPG Auswahl', art = ICON)	
 	oc = home(cont=oc, ID=NAME)				# Home-Button	
 	
 	sort_playlist = get_sort_playlist()	
-	# Log(sort_playlist)
+	# PLog(sort_playlist)
 	
 	for rec in sort_playlist:
 		title = rec[0].decode(encoding="utf-8", errors="ignore")
@@ -2563,9 +2580,9 @@ def EPG_Sender(title):
 @route(PREFIX + '/TVLiveRecordSender')	
 #	Liste aller TV-Sender wie EPG_Sender, hier mit Aufnahme-Button
 def TVLiveRecordSender(title):
-	Log('TVLiveRecordSender')
-	Log(Prefs['pref_LiveRecord_ffmpegCall'])
-	# Log('PID-Liste: %s' % Dict['PID'])		# PID-Liste, Initialisierung in Main
+	PLog('TVLiveRecordSender')
+	PLog(Prefs['pref_LiveRecord_ffmpegCall'])
+	# PLog('PID-Liste: %s' % Dict['PID'])		# PID-Liste, Initialisierung in Main
 			
 	oc = ObjectContainer(view_group="InfoList", title1='Recording TV-Live', title2='Aufnahme starten', art = ICON)	
 	oc = home(cont=oc, ID=NAME)				# Home-Button	
@@ -2575,7 +2592,7 @@ def TVLiveRecordSender(title):
 	duration = duration.strip()
 
 	sort_playlist = get_sort_playlist()		# Senderliste
-	Log('Sender: ' + str(len(sort_playlist)))
+	PLog('Sender: ' + str(len(sort_playlist)))
 	for rec in sort_playlist:
 		title 	= rec[0].decode(encoding="utf-8", errors="ignore")
 		link 	= rec[3]
@@ -2615,13 +2632,13 @@ def TVLiveRecordSender(title):
 #			Problem im Umgang mit subprocess.Popen (Thread-Konflikt?).
 #
 def LiveRecord(url, title, duration, laenge):
-	Log('LiveRecord')
-	Log(url); Log(title); 
-	Log('duration: %s, laenge: %s' % (duration, laenge))
+	PLog('LiveRecord')
+	PLog(url); PLog(title); 
+	PLog('duration: %s, laenge: %s' % (duration, laenge))
 		
 	if Dict['PIDffmpeg']:								# ungewollten Wiedereintritt abweisen 
-		Log('PIDffmpeg: %s' % Dict['PIDffmpeg'])
-		Log('PIDffmpeg = %s | Blocking LiveRecord' % Dict['PIDffmpeg'])
+		PLog('PIDffmpeg: %s' % Dict['PIDffmpeg'])
+		PLog('PIDffmpeg = %s | Blocking LiveRecord' % Dict['PIDffmpeg'])
 		Dict['PIDffmpeg'] = ''							# löschen für manuellen Aufruf 
 		# Für PHT Info erst hier nach autom. Wiedereintritt nach Popen möglich:
 		title1 = 'Aufnahme gestartet: %s' % title
@@ -2653,10 +2670,10 @@ def LiveRecord(url, title, duration, laenge):
 			url 	= '"%s"' % url						# Pfad enthält Leerz. - für ffmpeg in "" kleiden						
 	
 	cmd = Prefs['pref_LiveRecord_ffmpegCall']	% (url, duration, dest_file)
-	Log(cmd); 
+	PLog(cmd); 
 	
-	Log('Client-Platform: ' + str(Client.Platform))
-	Log(sys.platform)
+	PLog('Client-Platform: ' + str(Client.Platform))
+	PLog(sys.platform)
 	if sys.platform == 'win32':							
 		args = cmd
 	else:
@@ -2665,14 +2682,14 @@ def LiveRecord(url, title, duration, laenge):
 	try:
 		Dict['PIDffmpeg'] = ''
 		sp = subprocess.Popen(args, shell=False)
-		Log('sp: ' + str(sp))
+		PLog('sp: ' + str(sp))
 
 		if str(sp).find('object at') > 0:  			# subprocess.Popen object OK
 			Dict['PIDffmpeg'] = sp.pid				# PID zum Abgleich gegen Wiederholung sichern
-			Log('PIDffmpeg neu: %s' % Dict['PIDffmpeg'])
+			PLog('PIDffmpeg neu: %s' % Dict['PIDffmpeg'])
 			title1 = 'Aufnahme gestartet: %s' % dfname
 			summ	= 'zur Sender Auswahl'
-			Log(title1)
+			PLog(title1)
 			# PHT springt hier zurück an den Funktionskopf - Info dort
 			#if 'Home Theater' in str(Client.Platform):	# GetDirectory failed nach Info
 			#	return ObjectContainer(header='Info', message=title1)
@@ -2682,7 +2699,7 @@ def LiveRecord(url, title, duration, laenge):
 	
 	except Exception as exception:
 		msg = str(exception)
-		Log(msg)		
+		PLog(msg)		
 		title1 = "Fehler: %s" % msg
 		title1 = title1.decode(encoding="utf-8")
 		summ	= 'zur Sender Auswahl'
@@ -2697,7 +2714,7 @@ def LiveRecord(url, title, duration, laenge):
 	return oc
 #-----------------------------
 def get_sort_playlist():								# sortierte Playliste der TV-Livesender
-	Log('get_sort_playlist')
+	PLog('get_sort_playlist')
 	playlist = Resource.Load(PLAYLIST)					# lokale XML-Datei (Pluginverz./Resources)
 	stringextract('<channel>', '</channel>', playlist)	# ohne Header
 	playlist = blockextract('<item>', playlist)
@@ -2720,7 +2737,7 @@ def get_sort_playlist():								# sortierte Playliste der TV-Livesender
 #-----------------------------------------------------------------------------------------------------
 @route(PREFIX + '/EPG_ShowSingle')		# EPG: Daten holen in Modul EPG.py, Anzeige hier, Klick zum Livestream
 def EPG_ShowSingle(ID, name, stream_url, pagenr=0):
-	Log('EPG_ShowSingle'); Log(name)
+	PLog('EPG_ShowSingle'); PLog(name)
 	
 	# Indices EPG_rec: 0=starttime, 1=href, 2=img, 3=sname, 4=stime, 5=summ, 6=vonbis, 7=today_human: 
 	# Link zur Einzelanzeige href=rec[1] hier nicht verwendet - wenig zusätzl. Infos
@@ -2733,14 +2750,14 @@ def EPG_ShowSingle(ID, name, stream_url, pagenr=0):
 		
 	today_human = 'ab ' + EPG_rec[0][7]
 			
-	# Log(EPG_rec[0]) # bei Bedarf
+	# PLog(EPG_rec[0]) # bei Bedarf
 	name = name.decode(encoding="utf-8", errors="ignore") 
 	oc = ObjectContainer(view_group="InfoList", title1=name, title2=today_human, art = ICON)	
 	oc = home(cont=oc, ID=NAME)				# Home-Button	
 	
 	for rec in EPG_rec:
 		href=rec[1]; img=rec[2]; sname=rec[3]; stime=rec[4]; summ=rec[5]; vonbis=rec[6];
-		# Log(img)
+		# PLog(img)
 		if img.find('http') == -1:	# Werbebilder today.de hier ohne http://, Ersatzbild einfügen
 			img = R('icon-bild-fehlt.png')
 		sname = unescape(sname)
@@ -2768,7 +2785,7 @@ def EPG_ShowSingle(ID, name, stream_url, pagenr=0):
 
 @route(PREFIX + '/EPG_ShowAll')		
 def EPG_ShowAll(title, offset=0):
-	Log('EPG_ShowAll')
+	PLog('EPG_ShowAll')
 	title_org = title
 	title2='Aktuelle Sendungen'
 		
@@ -2777,7 +2794,7 @@ def EPG_ShowAll(title, offset=0):
 
 	# Zeilen-Index: title=rec[0]; EPG_ID=rec[1]; img=rec[2]; link=rec[3];	
 	sort_playlist = get_sort_playlist()	
-	Log(len(sort_playlist))
+	PLog(len(sort_playlist))
 	
 	rec_per_page = 10								# Anzahl pro Seite (Timeout ab 15 beobachtet)
 	max_len = len(sort_playlist)					# Anzahl Sätze gesamt
@@ -2786,7 +2803,7 @@ def EPG_ShowAll(title, offset=0):
 	
 	for i in range(len(sort_playlist)):
 		cnt = int(i) + int(offset)
-		# Log(cnt); Log(i)
+		# PLog(cnt); PLog(i)
 		if int(cnt) >= max_len:				# Gesamtzahl überschritten?
 			break
 		if i >= rec_per_page:				# Anzahl pro Seite überschritten?
@@ -2805,7 +2822,7 @@ def EPG_ShowAll(title, offset=0):
 		else:
 			# Indices EPG_rec: 0=starttime, 1=href, 2=img, 3=sname, 4=stime, 5=summ, 6=vonbis: 
 			rec = EPG.EPG(ID=ID, mode='OnlyNow')		# Daten holen - nur aktuelle Sendung
-			# Log(rec)	# bei Bedarf
+			# PLog(rec)	# bei Bedarf
 			if len(rec) == 0:							# Satz leer?
 				title = title_playlist + ': ohne EPG'
 				summ = 'weiter zum Livestream'
@@ -2816,7 +2833,7 @@ def EPG_ShowAll(title, offset=0):
 				if img.find('http') == -1:	# Werbebilder today.de hier ohne http://, Ersatzbild einfügen
 					img = R('icon-bild-fehlt.png')
 				sname = sname.replace('JETZT', title_playlist)			# JETZT durch Sender ersetzen
-				Log(sname)
+				PLog(sname)
 				title=sname.decode(encoding="utf-8", errors="ignore")
 				summ = summ.decode(encoding="utf-8", errors="ignore")
 				tagline = 'Zeit: ' + vonbis
@@ -2827,10 +2844,10 @@ def EPG_ShowAll(title, offset=0):
 			title=title, summary=summ,  tagline=tagline, thumb=img))	
 
 	# Mehr Seiten anzeigen:
-	# Log(offset); Log(cnt); Log(max_len);
+	# PLog(offset); PLog(cnt); PLog(max_len);
 	if (int(cnt) +1) < int(max_len): 						# Gesamtzahl noch nicht ereicht?
 		new_offset = cnt 
-		Log(new_offset)
+		PLog(new_offset)
 		summ = 'Mehr (insgesamt ' + str(max_len) + ') ' + title2
 		summ = summ.decode(encoding="utf-8", errors="ignore")
 		oc.add(DirectoryObject(key=Callback(EPG_ShowAll, title=title_org, offset=new_offset), 
@@ -2857,24 +2874,24 @@ def SenderLiveListe(title, listname, offset=0):	#
 	#
 	playlist = Resource.Load(PLAYLIST)					# lokale XML-Datei (Pluginverz./Resources)
 	playlist = blockextract('<channel>', playlist)
-	Log(len(playlist)); Log(listname)
+	PLog(len(playlist)); PLog(listname)
 	for i in range(len(playlist)):						# gewählte Channel extrahieren
 		item = playlist[i] 
 		name =  stringextract('<name>', '</name>', item)
-		Log(name)
+		PLog(name)
 		if name == listname:							# Bsp. Überregional, Regional, Privat
 			mylist =  playlist[i] 
 			break
 	
 	liste = blockextract('<item>', mylist)				# Details eines Senders
-	Log(len(liste));
+	PLog(len(liste));
 	EPG_ID_old = ''											# Doppler-Erkennung
 	sname_old=''; stime_old=''; summ_old=''; vonbis_old=''	# dto.
 	summary_old=''; tagline_old=''
 	for element in liste:							# EPG-Daten für einzelnen Sender holen 	
 		link = stringextract('<link>', '</link>', element) 	# HTML.StringFromElement unterschlägt </link>
 		link = unescape(link)						# amp; entfernen! Herkunft: HTML.ElementFromString bei &-Zeichen
-		Log(link);
+		PLog(link);
 		
 		# Bei link zu lokaler m3u8-Datei (Resources) reagieren SenderLiveResolution und ParsePlayList entsprechend:
 		#	der erste Eintrag (automatisch) entfällt, da für die lokale Ressource kein HTTP-Request durchge-
@@ -2886,15 +2903,15 @@ def SenderLiveListe(title, listname, offset=0):	#
 		title = stringextract('<title>', '</title>', element)
 		epg_schema=''; epg_url=''
 		epg_date=''; epg_title=''; epg_text=''; summary=''; tagline='' 
-		# Log(Prefs['pref_use_epg']) 					# Voreinstellung: EPG nutzen? - nur mit Schema nutzbar 
+		# PLog(Prefs['pref_use_epg']) 					# Voreinstellung: EPG nutzen? - nur mit Schema nutzbar 
 		if Prefs['pref_use_epg'] == True:
 			# Indices EPG_rec: 0=starttime, 1=href, 2=img, 3=sname, 4=stime, 5=summ, 6=vonbis:
 			EPG_ID = stringextract('<EPG_ID>', '</EPG_ID>', element)
-			Log(EPG_ID); Log(EPG_ID_old);
+			PLog(EPG_ID); PLog(EPG_ID_old);
 			if  EPG_ID == EPG_ID_old:					# Doppler: EPG vom Vorgänger verwenden
 				sname=sname_old; stime=stime_old; summ=summ_old; vonbis=vonbis_old
 				summary=summary_old; tagline=tagline_old
-				Log('EPG_ID=EPG_ID_old')
+				PLog('EPG_ID=EPG_ID_old')
 			else:
 				EPG_ID_old = EPG_ID
 				try:
@@ -2930,18 +2947,18 @@ def SenderLiveListe(title, listname, offset=0):	#
 			img = R(img)
 			
 		geo = stringextract('<geoblock>', '</geoblock>', element)
-		Log(geo)
+		PLog(geo)
 		if geo:
 			tagline = 'Livestream nur in Deutschland zu empfangen! %s'	% tagline
 			
-		Log(link); Log(img); Log(summary); Log(tagline[0:80]);
+		PLog(link); PLog(img); PLog(summary); PLog(tagline[0:80]);
 		Resolution = ""; Codecs = ""; duration = ""
 	
 		# if link.find('rtmp') == 0:				# rtmp-Streaming s. CreateVideoStreamObject
 		# Link zu master.m3u8 erst auf Folgeseite? - SenderLiveResolution reicht an  Parseplaylist durch  
 		oc.add(DirectoryObject(key=Callback(SenderLiveResolution, path=link, title=title, thumb=img),
 			title=title, summary=summary,  tagline=tagline, thumb=img))
-	Log(len(oc))
+	PLog(len(oc))
 	return oc
 		
 #-----------------------------------------------------------------------------------------------------
@@ -2960,7 +2977,7 @@ def SenderLiveListe(title, listname, offset=0):	#
 def SenderLiveResolution(path, title, thumb, include_container=False):
 	#page = HTML.ElementFromURL(path)
 	url_m3u8 = path
-	Log(title); Log(url_m3u8);
+	PLog(title); PLog(url_m3u8);
 
 	title = title.decode(encoding="utf-8", errors="ignore")
 	oc = ObjectContainer(view_group="InfoList", title1=title + ' Live', art=ICON)
@@ -2985,7 +3002,7 @@ def SenderLiveResolution(path, title, thumb, include_container=False):
 		
 	# alle übrigen (i.d.R. http-Links), Videoobjekte für einzelne Auflösungen erzeugen
 	if url_m3u8.find('.m3u8') >= 0:				# häufigstes Format
-		Log(url_m3u8)
+		PLog(url_m3u8)
 		if url_m3u8.find('http') == 0:			# URL (auch https) oder lokale Datei? (lokal entfällt Eintrag "autom.")			
 			oc.add(CreateVideoStreamObject(url=url_m3u8, title=title + ' | Bandbreite und Auflösung automatisch', 
 				summary='automatische Auflösung | Auswahl durch den Player', tagline=title,
@@ -3002,18 +3019,18 @@ def SenderLiveResolution(path, title, thumb, include_container=False):
 # Spezialbehandlung für N24 - Test auf Verfügbarkeit der Lastserver (1-4): wir prüfen
 # 	die Lastservers durch, bis einer Daten liefert
 def N24LastServer(url_m3u8):	
-	Log('N24LastServer: ' + url_m3u8)
+	PLog('N24LastServer: ' + url_m3u8)
 	url = url_m3u8
 	
 	pos = url.find('index_')	# Bsp. index_1_av-p.m3u8
 	nr_org = url[pos+6:pos+7]
-	Log(nr_org) 
+	PLog(nr_org) 
 	for nr in [1,2,3,4]:
-		# Log(nr)
+		# PLog(nr)
 		url_list = list(url)
 		url_list[pos+6:pos+7] = str(nr)
 		url_new = "".join(url_list)
-		# Log(url_new)
+		# PLog(url_new)
 		try:
 			# playlist = HTTP.Request(url).content   # wird abgewiesen
 			req = urllib2.Request(url_new)
@@ -3022,7 +3039,7 @@ def N24LastServer(url_m3u8):
 		except:
 			playlist = ''
 			
-		Log(playlist[:20])
+		PLog(playlist[:20])
 		if 	playlist:	# playlist gefunden - diese url verwenden
 			return url_new	
 	
@@ -3060,20 +3077,20 @@ def CreateVideoStreamObject(url, title, summary, tagline, meta, thumb, rtmp_live
   #			(offensichtlich Problem mit dem Javascriptcode)
   
 	url = url.replace('%40', '@')	# Url kann Zeichen @ enthalten
-	Log('CreateVideoStreamObject: '); Log(url); Log(rtmp_live) 
-	Log('include_container: '); Log(include_container)
-	Log(Client.Platform)
-	Log('Plattform: ' + sys.platform)
-	Log(Client.Product)
+	PLog('CreateVideoStreamObject: '); PLog(url); PLog(rtmp_live) 
+	PLog('include_container: '); PLog(include_container)
+	PLog(Client.Platform)
+	PLog('Plattform: ' + sys.platform)
+	PLog(Client.Product)
 
 	random.seed()								# 23.08.2017 Zufallswert für eindeutigen rating_key 				
 	rating_id = random.randint(1,10000)			# 	(wie CreateTrackObject) - title verursacht Error
 	rating_key = 'rating_key-' + str(rating_id) #	im Server-Log
-	Log(rating_key)
+	PLog(rating_key)
 
 	if url.find('rtmp:') >= 0:	# rtmp = Protokoll für flash, Quellen: rtmpdump, shark, Chrome/Entw.-Tools
 		if rtmp_live == 'ja':
-			Log('rtmp_live: '); Log(rtmp_live) 
+			PLog('rtmp_live: '); PLog(rtmp_live) 
 			mo = MediaObject(parts=[PartObject(key=RTMPVideoURL(url=url,live=True))]) # live=True nur Streaming
 			
 			videoclip_obj = VideoClipObject(
@@ -3116,8 +3133,8 @@ def CreateVideoStreamObject(url, title, summary, tagline, meta, thumb, rtmp_live
 			
 	videoclip_obj.add(mo)
 
-	Log(url); Log(title); Log(summary); Log(tagline);
-	Log(resolution); Log(meta); Log(thumb); Log(rating_key); 
+	PLog(url); PLog(title); PLog(summary); PLog(tagline);
+	PLog(resolution); PLog(meta); PLog(thumb); PLog(rating_key); 
 	
 	if include_container:
 		return ObjectContainer(objects=[videoclip_obj])				
@@ -3131,11 +3148,11 @@ def CreateVideoStreamObject(url, title, summary, tagline, meta, thumb, rtmp_live
 	#	beobachtet bei Firefox (Suse Leap) + Chrome (Windows7)
 	#	s.a. https://github.com/sander1/channelpear.bundle/tree/8605fc778a2d46243bb0378b0ab40a205c408da4
 def CreateVideoClipObject(url, title, summary, tagline, meta, thumb, duration, resolution, include_container=False, **kwargs):
-	Log('CreateVideoClipObject')
-	Log(url); Log(duration); Log(tagline); Log(resolution)
-	Log(Client.Platform)
-	Log('Plattform: ' + sys.platform)
-	Log(Client.Product)
+	PLog('CreateVideoClipObject')
+	PLog(url); PLog(duration); PLog(tagline); PLog(resolution)
+	PLog(Client.Platform)
+	PLog('Plattform: ' + sys.platform)
+	PLog(Client.Product)
 	
 	# resolution = ''					# leer - Clients skalieren besser selbst
 	resolution=[720, 540, 480]			# wie VideoClipObject: Vorgabe für Webplayer entbehrlich, für PHT erforderlich
@@ -3172,7 +3189,7 @@ def CreateVideoClipObject(url, title, summary, tagline, meta, thumb, duration, r
 @route(PREFIX + '/PlayVideo')  
 #def PlayVideo(url, resolution, **kwargs):	# resolution übergeben, falls im  videoclip_obj verwendet
 def PlayVideo(url, **kwargs):	
-	Log('PlayVideo: ' + url); 		# Log('PlayVideo: ' + resolution)
+	PLog('PlayVideo: ' + url); 		# PLog('PlayVideo: ' + resolution)
 	return Redirect(url)
 
 ####################################################################################################
@@ -3180,18 +3197,18 @@ def PlayVideo(url, **kwargs):
 #	Bei Änderungen der Sender Datei livesenderRadio.xml anpassen (Sendernamen, Icons)
 @route(PREFIX + '/RadioLiveListe')  
 def RadioLiveListe(path, title):
-	Log('RadioLiveListe');
+	PLog('RadioLiveListe');
 	oc = ObjectContainer(view_group="InfoList", title1=title, art=ICON)
 	oc = home(cont=oc, ID=NAME)					# Home-Button
 	
 	#page = HTML.ElementFromURL(path)
-	#Log(page)
+	#PLog(page)
 	playlist = Resource.Load(PLAYLIST_Radio) 
-	#Log(playlist)					
+	#PLog(playlist)					
 	
 	doc = HTML.ElementFromString(playlist)		# unterschlägt </link>	
 	liste = doc.xpath('//item')					# z.Z. nur 1 Channel (ARD). Bei Bedarf Schleife erweitern
-	Log(len(liste))
+	PLog(len(liste))
 	
 	# Unterschied zur TV-Playlist livesenderTV.xml: Liste  der Radioanstalten mit Links zu den Webseiten.
 	#	Ab 11.10.2917: die Liste + Reihenfolge der Sender wird in der jew. Webseite ermittelt. Die Sender-Liste
@@ -3205,7 +3222,7 @@ def RadioLiveListe(path, title):
 
 	for element in liste:
 		s = HTML.StringFromElement(element) 		# Ergebnis wie XMML.StringFromElement
-		# Log(s)					# bei Bedarf
+		# PLog(s)					# bei Bedarf
 		title = stringextract('<title>', '</title>', s)
 		title = title.decode(encoding="utf-8", errors="ignore")
 		link = stringextract('<link>', '<thumbnail>', s) 	# HTML.StringFromElement unterschlägt </link>
@@ -3219,17 +3236,17 @@ def RadioLiveListe(path, title):
 			
 		sender = stringextract('<sender>', '</sender>', s)			# Auswertung sender + thumbs in RadioAnstalten
 			
-		Log(title); Log(link); Log(img); 												
+		PLog(title); PLog(link); PLog(img); 												
 		oc.add(DirectoryObject(key=Callback(RadioAnstalten, path=link, title=title, sender=sender), 
 			title=title, summary='einzelne Sender', tagline='Radio', thumb=img))
 	return oc
 #-----------------------------
 @route(PREFIX + '/RadioAnstalten')  
 def RadioAnstalten(path, title,sender):
-	Log('RadioAnstalten: ' + path);
+	PLog('RadioAnstalten: ' + path);
 	entry_path = path	# sichern
 	oc = ObjectContainer(view_group="InfoList",  title1='Radiosender von ' + title, art=ICON)
-	Log(Client.Platform)
+	PLog(Client.Platform)
 	client = Client.Platform
 	if client == None:
 		client = ''
@@ -3242,13 +3259,13 @@ def RadioAnstalten(path, title,sender):
 	entries = blockextract('class=\"teaser\"', page)	
 	
 	del entries[0:2]								# "Javascript-Fehler" überspringen (2 Elemente)
-	Log(len(entries))
+	PLog(len(entries))
 
 	for element in entries:
 		pos = element.find('class=\"socialMedia\"')			# begrenzen
 		if pos >= 0:
 			element = element[0:pos]
-		# Log(element[0:80])						#  nur bei Bedarf)	
+		# PLog(element[0:80])						#  nur bei Bedarf)	
 		
 		img_src = ""						
 			
@@ -3258,15 +3275,15 @@ def RadioAnstalten(path, title,sender):
 			headline = headline .decode('utf-8')		# tagline-Attribute verlangt Unicode
 		if element.find('subtitle') >= 0:	
 			subtitel = stringextract('\"subtitle\">', '</p>', element)
-		Log(headline); Log(subtitel);				
+		PLog(headline); PLog(subtitel);				
 			
 		href = stringextract('<a href=\"', '\"', element)
 		sid = href.split('documentId=')[1]
 		
 		path = BASE_URL + '/play/media/' + sid + '?devicetype=pc&features=flash'	# -> Textdatei mit Streamlink
-		Log('Streamlink: ' + path)
+		PLog('Streamlink: ' + path)
 		path_content = HTTP.Request(path).content
-		Log(path_content[0:80])			# enthält nochmal Bildquelle + Auflistung Streams (_quality)
+		PLog(path_content[0:80])			# enthält nochmal Bildquelle + Auflistung Streams (_quality)
 										# Streamlinks mit .m3u-Ext. führen zu weiterer Textdatei - Auswert. folgt 
 		#slink = stringextract('_stream\":\"', '\"}', path_content) 		# nur 1 Streamlink? nicht mehr aktuell
 		link_path,link_img, m3u8_master, geoblock = parseLinks_Mp4_Rtmp(path_content)	# mehrere Streamlinks auswerten,
@@ -3274,7 +3291,7 @@ def RadioAnstalten(path, title,sender):
 		
 		if headline:						# Zuordnung zu lokalen Icons, Quelle livesenderRadio.xml
 			senderlist = sender.split('|')
-			# Log(senderlist); 		# bei Bedarf
+			# PLog(senderlist); 		# bei Bedarf
 			for i in range (len(senderlist)):
 				sname = ''; img = ''
 				try:								# try gegen Schreibfehler in  livesenderRadio.xml
@@ -3285,37 +3302,37 @@ def RadioAnstalten(path, title,sender):
 					img 	= pair[1].strip()
 				except:
 					break								# dann bleibt es bei img_src (Fallback)
-				# Log('headline:' + headline.upper()); Log(sname.upper());
+				# PLog('headline:' + headline.upper()); PLog(sname.upper());
 				if sname.upper() == headline.upper():	# lokaler Sendername in  <sender> muss Sendernahme aus headline entspr.
 					# if img:
 					img_path = os.path.join(Dict['R'], img)
-					Log(img_path)
+					PLog(img_path)
 					if os.path.exists(img_path):
 						img_src = img
 					else:
 						img_src = link_img	# Fallback aus parseLinks_Mp4_Rtmp, ev. nur Mediathek-Symbol
-					# Log(img_src); 			# bei Bedarf
+					# PLog(img_src); 			# bei Bedarf
 					break
 
-		Log(link_path); Log(link_img); Log(img_src);Log(m3u8_master); 
+		PLog(link_path); PLog(link_img); PLog(img_src);PLog(m3u8_master); 
 		headline_org =  headline	# sichern		
 		for i in range(len(link_path)):
 			s = link_path[i]
-			Log(s)
+			PLog(s)
 			mark = s[0]
 			slink = s[2:]
-			Log(s); Log(mark); Log(slink); 
+			PLog(s); PLog(mark); PLog(slink); 
 			if slink.find('.m3u') > 9:		# der .m3u-Link führt zu weiterer Textdatei, die den Streamlink enthält
 				try:						# Request kann fehlschlagen, z.B. bei RBB, SR, SWR
 					#slink_content = HTTP.Request(slink).content	# 
 					slink_content = HTTP.Request(slink,timeout=float(1)).content	# timeout 0,5 für RBB + SR zu klein
 					z = slink_content.split()
-					Log(z)
+					PLog(z)
 					slink = z[-1]				# Link in letzter Zeile
 				except:
 					slink = ""
 			
-			Log(img_src); Log(headline); Log(subtitel); Log(sid); Log(slink);	# Bildquelle: z.Z. verwenden wir nur img_src
+			PLog(img_src); PLog(headline); PLog(subtitel); PLog(sid); PLog(slink);	# Bildquelle: z.Z. verwenden wir nur img_src
 			if subtitel == '':		# OpenPHT parsing Error, wenn leer
 				subtitel = headline
 			if mark == '0':						#  Titel kennz. (0=64kb, 1=128kb, 2=128kb), bisher nur diese gesehen
@@ -3325,7 +3342,7 @@ def RadioAnstalten(path, title,sender):
 			headline = headline.decode(encoding="utf-8", errors="ignore")
 			subtitel = unescape(subtitel)	
 			subtitel = subtitel.decode(encoding="utf-8", errors="ignore")
-			Log(subtitel)
+			PLog(subtitel)
 				
 			if slink:						# normaler Link oder Link über .m3u ermittelt
 				# msg = ', Stream ' + str(i + 1) + ': OK'		# Log in parseLinks_Mp4_Rtmp ausreichend
@@ -3336,13 +3353,13 @@ def RadioAnstalten(path, title,sender):
 				else:							# Bildquelle lokal
 					# OpenPHT scheitert, falls hier CreateTrackObject direkt angesteuert wird und sich in der
 					#	Liste andere als Trackobjekte befinden (z.B. Homebutton) Webplayer dagegen OK
-					Log(img_src) # Log hilft hier gegen (seltenes) "Verschlucken" des Caches (Bild fehlt)
+					PLog(img_src) # Log hilft hier gegen (seltenes) "Verschlucken" des Caches (Bild fehlt)
 					oc.add(CreateTrackObject(url=slink, title=headline, summary=subtitel, thumb=R(img_src), fmt='mp3',))							 	
 			else:
 				msg = ' Stream ' + str(i + 1) + ': nicht verfügbar'	# einzelnen nicht zeigen - verwirrt nur
 	
 	if len(oc) < 1:	      		# keine Radiostreams gefunden		
-		Log('oc = 0, keine Radiostreams gefunden') 		 
+		PLog('oc = 0, keine Radiostreams gefunden') 		 
 		msgHg = 'keine Radiostreams bei ' + title + ' gefunden/verfuegbar' 
 		msg =  'keine Radiostreams bei ' + title + ' gefunden/verfuegbar, ' + 'Seite: ' + path
 		return ObjectContainer(header=msgH, message=msg)	# bricht Auswertung für Anstalt komplett ab							
@@ -3371,17 +3388,17 @@ def RadioEinzel(url, title, summary, fmt, thumb,):
 
 # def CreateTrackObject(url, title, summary, fmt, thumb, include_container=False, **kwargs):
 def CreateTrackObject(url, title, summary, fmt, thumb, include_container=False, location=None, includeBandwidths=None, autoAdjustQuality=None, hasMDE=None, **kwargs):
-	Log('CreateTrackObject: ' + url); Log(include_container)
-	Log(summary);Log(fmt);Log(thumb);
+	PLog('CreateTrackObject: ' + url); PLog(include_container)
+	PLog(summary);PLog(fmt);PLog(thumb);
 	
 	if location is not None: 
-		Log(location); 
+		PLog(location); 
 	if includeBandwidths is not None: 
-		Log(includeBandwidths); 
+		PLog(includeBandwidths); 
 	if autoAdjustQuality is not None : 
-		Log(autoAdjustQuality); 
+		PLog(autoAdjustQuality); 
 	if hasMDE is not None: 
-		Log(hasMDE); 
+		PLog(hasMDE); 
 
 	if fmt == 'mp3':
 		container = Container.MP3
@@ -3402,7 +3419,7 @@ def CreateTrackObject(url, title, summary, fmt, thumb, include_container=False, 
 	random.seed()						
 	rating_id = random.randint(1,10000)
 	rating_key = 'rating_key-' + str(rating_id)
-	Log(rating_key)
+	PLog(rating_key)
 	
 	track_object = TrackObject(
 		key = Callback(CreateTrackObject, url=url, title=title, summary=summary, fmt=fmt, thumb=thumb, include_container=True, 
@@ -3440,32 +3457,32 @@ def CreateTrackObject(url, title, summary, fmt, thumb, include_container=False, 
 #		http://stackoverflow.com/questions/36901/what-does-double-star-and-star-do-for-parameters
 #		**kwargs allein würde reichen - None-Parameter verbleiben zunächst zum Debuggen
 def PlayAudio(url, location=None, includeBandwidths=None, autoAdjustQuality=None, hasMDE=None, **kwargs):	
-	Log('PlayAudio')
-	Log(url)	
+	PLog('PlayAudio')
+	PLog(url)	
 	if location is not None: 
-		Log(location); 					# Bsp. lan
+		PLog(location); 					# Bsp. lan
 	if includeBandwidths is not None: 
-		Log(includeBandwidths); 		
+		PLog(includeBandwidths); 		
 	if autoAdjustQuality is not None: 
-		Log(autoAdjustQuality);			# Bsp. 0
+		PLog(autoAdjustQuality);			# Bsp. 0
 	if hasMDE is not None: 
-		Log(hasMDE); 					# Bsp. 1
+		PLog(hasMDE); 					# Bsp. 1
 		
 	if url is None or url == '':		# sollte hier nicht vorkommen
-		Log('Url fehlt!')
+		PLog('Url fehlt!')
 		return ObjectContainer(header='Error', message='Url fehlt!') # Web-Player: keine Meldung
 	
 	try:
 		req = urllib2.Request(url)						# Test auf Existenz, SSLContext für HTTPS erforderlich,
 		gcontext = ssl.SSLContext(ssl.PROTOCOL_TLSv1)  	#	Bsp.: SWR3 https://pdodswr-a.akamaihd.net/swr3
 		ret = urllib2.urlopen(req, context=gcontext)
-		Log('PlayAudio: ' + str(ret.code))
+		PLog('PlayAudio: ' + str(ret.code))
 	except Exception as exception:	
 		error_txt = 'Server meldet: ' + str(exception)
 		error_txt = error_txt + '\r\n' + url			 			 	 
 		msgH = 'Error'; msg = error_txt
 		msg =  msg.decode(encoding="utf-8", errors="ignore")
-		Log(msg)
+		PLog(msg)
 		return ObjectContainer(header=msgH, message=msg) # Framework fängt ab - keine Ausgabe
 			
 	return Redirect(url)
@@ -3481,7 +3498,7 @@ def ZDF_Search(query=None, title=L('Search'), s_type=None, pagenr='', **kwargs):
 	query = query.strip()
 	query = query.replace(' ', '+')		# Leer-Trennung bei ZDF-Suche mit +
 	query = urllib2.quote(query, "utf-8")
-	Log('ZDF_Search'); Log(query); Log(pagenr); Log(s_type)
+	PLog('ZDF_Search'); PLog(query); PLog(pagenr); PLog(s_type)
 
 	ID='Search'
 	ZDF_Search_PATH	 = 'https://www.zdf.de/suche?q=%s&from=&to=&sender=alle+Sender&attrs=&contentTypes=episode&sortBy=date&page=%s'
@@ -3492,13 +3509,13 @@ def ZDF_Search(query=None, title=L('Search'), s_type=None, pagenr='', **kwargs):
 	if pagenr == '':		# erster Aufruf muss '' sein
 		pagenr = 1
 	path = ZDF_Search_PATH % (query, pagenr) 
-	Log(path)	
+	PLog(path)	
 	# page = HTTP.Request(path, cacheTime=1).content 		# Debug: cacheTime=1 
 	page = HTTP.Request(path).content 
 	searchResult = stringextract('data-loadmore-result-count="', '"', page)	# Anzahl Ergebnisse
-	Log(searchResult);
+	PLog(searchResult);
 	
-	# Log(page)	# bei Bedarf		
+	# PLog(page)	# bei Bedarf		
 	NAME = 'ZDF Mediathek'
 	name = 'Suchergebnisse zu: %s (Gesamt: %s), Seite %s'  % (urllib.unquote(query), searchResult, pagenr)
 	name = name.decode(encoding="utf-8", errors="ignore")
@@ -3524,7 +3541,7 @@ def ZDF_Search(query=None, title=L('Search'), s_type=None, pagenr='', **kwargs):
 	# 	Daher entfällt die offset-Variante wiez.B. in BarriereArmSingle.
 	pagenr = int(pagenr) + 1
 	path = ZDF_Search_PATH % (query, pagenr)
-	Log(pagenr); Log(path)
+	PLog(pagenr); PLog(path)
 	page = HTTP.Request(path, cacheTime=1).content
 	content =  blockextract('class="artdirect"', page)
 	if len(content) > 0:
@@ -3537,18 +3554,18 @@ def ZDF_Search(query=None, title=L('Search'), s_type=None, pagenr='', **kwargs):
 #-------------------------
 @route(PREFIX + '/ZDF_Verpasst')
 def ZDF_Verpasst(title, zdfDate, offset=0):
-	Log('ZDF_Verpasst'); Log(title); Log(zdfDate)
+	PLog('ZDF_Verpasst'); PLog(title); PLog(zdfDate)
 	oc = ObjectContainer(title2=title, view_group="List")
 	oc = home(cont=oc, ID='ZDF')							# Home-Button
 
 	path = ZDF_SENDUNG_VERPASST % zdfDate
 	page = HTTP.Request(path).content 
-	Log(path);	# Log(page)	# bei Bedarf
+	PLog(path);	# PLog(page)	# bei Bedarf
 
 	oc, offset, page_cnt = ZDF_get_content(oc=oc, page=page, ref_path=path, ID='VERPASST', offset=offset)
 	summ_mehr = 'Mehr zu >Verpasst<, Gesamt: %s' % page_cnt
 	
-	Log(offset)
+	PLog(offset)
 	if offset:
 		summ_mehr = summ_mehr.decode(encoding="utf-8", errors="ignore")
 		oc.add(DirectoryObject(key=Callback(ZDF_Verpasst, title=title, zdfDate=zdfDate, offset=offset), 
@@ -3559,7 +3576,7 @@ def ZDF_Verpasst(title, zdfDate, offset=0):
 ####################################################################################################
 @route(PREFIX + '/ZDFSendungenAZ')
 def ZDFSendungenAZ(name):
-	Log('ZDFSendungenAZ')
+	PLog('ZDFSendungenAZ')
 	oc = ObjectContainer(title2=name, view_group="List")
 	oc = home(cont=oc, ID='ZDF')							# Home-Button
 	
@@ -3577,7 +3594,7 @@ def ZDFSendungenAZ(name):
 ####################################################################################################
 @route(PREFIX + '/SendungenAZList')
 def SendungenAZList(title, element, offset=0):	# Sendungen zm gewählten Buchstaben
-	Log('SendungenAZList')
+	PLog('SendungenAZList')
 	title2='Sendungen mit ' + element
 	oc = ObjectContainer(title2=title2, view_group="List")
 	oc = home(cont=oc, ID='ZDF')							# Home-Button
@@ -3587,10 +3604,10 @@ def SendungenAZList(title, element, offset=0):	# Sendungen zm gewählten Buchsta
 		group = '0+-+9'		# ZDF-Vorgabe
 	azPath = ZDF_SENDUNGEN_AZ % group
 	page = HTTP.Request(azPath).content 
-	Log(azPath);	
+	PLog(azPath);	
 
 	oc, offset, page_cnt = ZDF_get_content(oc=oc, page=page, ref_path=azPath, ID='DEFAULT', offset=offset)
-	Log(page_cnt)  
+	PLog(page_cnt)  
 	if page_cnt == 0:	# Fehlerbutton bereits in ZDF_get_content
 		return oc
 		
@@ -3607,7 +3624,7 @@ def SendungenAZList(title, element, offset=0):	# Sendungen zm gewählten Buchsta
 #	möglich (Übergabe Objectcontainer in Callback nicht möglich - kommt als String an)
 @route(PREFIX + '/ZDF_Sendungen')	
 def ZDF_Sendungen(url, title, ID, offset=0):
-	Log('ZDFSendungen')
+	PLog('ZDFSendungen')
 	
 	title = title.decode(encoding="utf-8", errors="ignore")
 	oc = ObjectContainer(title2=title, view_group="List")
@@ -3624,7 +3641,7 @@ def ZDF_Sendungen(url, title, ID, offset=0):
 					
 	oc, offset, page_cnt = ZDF_get_content(oc=oc, page=page, ref_path=url, ID='VERPASST', offset=offset)
 
-	Log(offset)
+	PLog(offset)
 	summ_mehr = 'Mehr zu >%s<, Gesamt: %s' % (title, page_cnt)
 	if offset:
 		summ_mehr = summ_mehr.decode(encoding="utf-8", errors="ignore")
@@ -3636,7 +3653,7 @@ def ZDF_Sendungen(url, title, ID, offset=0):
 ####################################################################################################
 @route(PREFIX + '/Rubriken')
 def Rubriken(name):
-	Log('Rubriken')
+	PLog('Rubriken')
 	oc = ObjectContainer(title2='ZDF: ' + name, view_group="List")
 	oc = home(cont=oc, ID='ZDF')							# Home-Button
 
@@ -3661,14 +3678,14 @@ def Rubriken(name):
 #-------------------------
 @route(PREFIX + '/RubrikSingle')
 def RubrikSingle(title, path, offset=0):
-	Log('RubrikSingle'); 
+	PLog('RubrikSingle'); 
 	oc = ObjectContainer(title2=title, view_group="List")
 	oc = home(cont=oc, ID='ZDF')							# Home-Button
 	
 	page = HTTP.Request(path).content 			
 	oc, offset, page_cnt = ZDF_get_content(oc=oc, page=page, ref_path=path, ID='Rubriken', offset=offset)
 	
-	Log(offset)
+	PLog(offset)
 	if offset:
 		summ_mehr = 'Mehr zu >%s<, Gesamt: %s' % (title, page_cnt)
 		summ_mehr = summ_mehr.decode(encoding="utf-8", errors="ignore")
@@ -3679,7 +3696,7 @@ def RubrikSingle(title, path, offset=0):
 ####################################################################################################
 @route(PREFIX + '/MeistGesehen')
 def MeistGesehen(name, offset=0):
-	Log('MeistGesehen'); 
+	PLog('MeistGesehen'); 
 	oc = ObjectContainer(title2=name, view_group="List")
 	oc = home(cont=oc, ID='ZDF')							# Home-Button
 	
@@ -3687,9 +3704,9 @@ def MeistGesehen(name, offset=0):
 	page = HTTP.Request(path).content 			
 	oc, offset, page_cnt = ZDF_get_content(oc=oc, page=page, ref_path=path, ID='MeistGesehen', offset=offset)
 	
-	Log(offset)
+	PLog(offset)
 	if offset:
-		# Log(name); Log(page_cnt)
+		# PLog(name); PLog(page_cnt)
 		summ_mehr = 'Mehr zu >%s<, Gesamt: %s' % (name, page_cnt)
 		summ_mehr = summ_mehr.decode(encoding="utf-8", errors="ignore")
 		oc.add(DirectoryObject(key=Callback(RubrikSingle, title=name, path=path, offset=offset), 
@@ -3700,20 +3717,20 @@ def MeistGesehen(name, offset=0):
 ####################################################################################################
 @route(PREFIX + '/NeuInMediathek')
 def NeuInMediathek(name, offset=0):
-	Log('NeuInMediathek'); 
+	PLog('NeuInMediathek'); 
 	oc = ObjectContainer(title2=name, view_group="List")
 	oc = home(cont=oc, ID='ZDF')							# Home-Button
 	
 	path = ZDF_BASE
 	page = HTTP.Request(path).content
-	Log(len(page))
+	PLog(len(page))
 	#  1. Block extrahieren (Blöcke: Neu, Nachrichten, Sport ...)
 	page = stringextract('>Neu in der Mediathek<','<h2 class="cluster-title"', page)
-	Log(len(page))
+	PLog(len(page))
 	 			
 	oc, offset, page_cnt = ZDF_get_content(oc=oc, page=page, ref_path=path, ID='NeuInMediathek', offset=offset)
 	
-	Log(offset)
+	PLog(offset)
 	if offset:
 		summ_mehr = 'Mehr zu >%s<, Gesamt: %s' % (name, page_cnt)
 		summ_mehr = summ_mehr.decode(encoding="utf-8", errors="ignore")
@@ -3725,7 +3742,7 @@ def NeuInMediathek(name, offset=0):
 ####################################################################################################
 @route(PREFIX + '/BarriereArm')		# z.Z. nur Hörfassungen, Rest ausgeblendet, da UT in Plex-Channels n.m.
 def BarriereArm(name):				# Vorauswahl: 1. Infos, 2. Hörfassungen, 3. Videos mit Untertitel
-	Log('BarriereArm')
+	PLog('BarriereArm')
 	oc = ObjectContainer(title2='ZDF: ' + name, view_group="List")
 	oc = home(cont=oc, ID='ZDF')								# Home-Button
 
@@ -3754,8 +3771,8 @@ def BarriereArm(name):				# Vorauswahl: 1. Infos, 2. Hörfassungen, 3. Videos mi
 #-------------------------
 @route(PREFIX + '/BarriereArmSingle')
 def BarriereArmSingle(title, ID, offset=0):	# Aufruf: 1. Infos, 2. Hörfassungen, 3. Videos mit Untertitel
-	Log('BarriereArmSingle: ' + ID)
-	Log(offset)
+	PLog('BarriereArmSingle: ' + ID)
+	PLog(offset)
 	
 	title = title.decode(encoding="utf-8", errors="ignore")
 	oc = ObjectContainer(title2='ZDF: ' + title, view_group="List")
@@ -3769,7 +3786,7 @@ def BarriereArmSingle(title, ID, offset=0):	# Aufruf: 1. Infos, 2. Hörfassungen
 	cont2 =  stringextract('Hörfassungen</h2>', 'Die neuesten Videos mit Untertitel</h2>', page)
 	pos = page.find('Die neuesten Videos mit Untertitel</h2>')   # nur 1 x vorh, bis Rest
 	cont3 = page[pos:]
-	Log(len(cont3))
+	PLog(len(cont3))
 	
 	if ID == 'Infos':
 		oc, offset, page_cnt  = ZDF_get_content(oc=oc, page=cont1, ref_path=path, ID='BARRIEREARM', offset=offset)	
@@ -3781,7 +3798,7 @@ def BarriereArmSingle(title, ID, offset=0):	# Aufruf: 1. Infos, 2. Hörfassungen
 		oc, offset, page_cnt  = ZDF_get_content(oc=oc, page=cont3, ref_path=path, ID='BARRIEREARM', offset=offset)	
 		summ_mehr = 'Mehr zu >Videos mit Untertitel<, Gesamt: %s' % page_cnt
 	
-	Log(offset)
+	PLog(offset)
 	if offset:
 		summ_mehr = summ_mehr.decode(encoding="utf-8", errors="ignore")
 		oc.add(DirectoryObject(key=Callback(BarriereArmSingle, title=title, ID=ID, offset=offset), 
@@ -3792,7 +3809,7 @@ def BarriereArmSingle(title, ID, offset=0):	# Aufruf: 1. Infos, 2. Hörfassungen
 ####################################################################################################
 @route(PREFIX + '/International')
 def International(name, offset=0):
-	Log('International'); 
+	PLog('International'); 
 	oc = ObjectContainer(title2=name, view_group="List")
 	oc = home(cont=oc, ID='ZDF')							# Home-Button
 	
@@ -3802,11 +3819,11 @@ def International(name, offset=0):
 		path = 'https://www.zdf.de/international/zdfarabic'
 		
 	page = HTTP.Request(path).content
-	Log(len(page))
+	PLog(len(page))
 	 			
 	oc, offset, page_cnt = ZDF_get_content(oc=oc, page=page, ref_path=path, ID='International', offset=offset)
 	
-	Log(offset);Log(page_cnt)
+	PLog(offset);PLog(page_cnt)
 	if offset:
 		summ_mehr = 'Mehr zu >%s<, Gesamt: %s' % (name, page_cnt)
 		summ_mehr = summ_mehr.decode(encoding="utf-8", errors="ignore")
@@ -3824,8 +3841,8 @@ def International(name, offset=0):
 # 	ID='Search' od. 'VERPASST' - Abweichungen zu Rubriken + A-Z
 
 def ZDF_get_content(oc, page, ref_path, offset=0, ID=None):	
-	Log('ZDF_get_content'); Log(ID); Log(ref_path); Log(offset)					
-	Log(len(page));			
+	PLog('ZDF_get_content'); PLog(ID); PLog(ref_path); PLog(offset)					
+	PLog(len(page));			
 	max_count = int(Prefs['pref_maxZDFContent'])				# max. Anzahl Einträge ab offset
 	offset = int(offset)
 	
@@ -3839,7 +3856,7 @@ def ZDF_get_content(oc, page, ref_path, offset=0, ID=None):
 	if page.find('class=\"content-box gallery-slider-box') >= 0: 	# Bildgalerie (hier aus Folgeseiten)
 		title = stringextract('\"big-headline\"  itemprop=\"name\" >', '</h1>', page)
 		title = unescape(title)
-		Log(title)
+		PLog(title)
 		oc = ZDF_Bildgalerie(oc=oc, page=page, mode='is_gallery', title=title)
 		page_cnt = len(oc)
 		return oc, offset, page_cnt 
@@ -3859,7 +3876,7 @@ def ZDF_get_content(oc, page, ref_path, offset=0, ID=None):
 			msg_notfound = 'Leider kein Video verfügbar zu: ' + page_title
 		
 	pos = page.find('class="content-box"')					# ab hier verwertbare Inhalte 
-	Log('pos: ' + str(pos))
+	PLog('pos: ' + str(pos))
 	if pos >= 0:
 		page = page[pos:]
 				
@@ -3867,7 +3884,7 @@ def ZDF_get_content(oc, page, ref_path, offset=0, ID=None):
 	if ID == 'NeuInMediathek':									# letztes Element entfernen (Verweis Sendung verpasst)
 		content.pop()	
 	page_cnt = len(content)
-	Log('content_Blocks: ' + str(page_cnt));
+	PLog('content_Blocks: ' + str(page_cnt));
 	
 	if page_cnt == 0:											# kein Ergebnis oder allg. Fehler
 		s = 'Es ist leider ein Fehler aufgetreten.'				# ZDF-Meldung Server-Problem
@@ -3878,7 +3895,7 @@ def ZDF_get_content(oc, page, ref_path, offset=0, ID=None):
 			if page_title:
 				msg_notfound = 'Leider keine Inhalte verfügbar zu: ' + page_title
 			
-		Log('msg_notfound: ' + str(page_cnt))
+		PLog('msg_notfound: ' + str(page_cnt))
 		# kann entfallen - Blockbildung mit class="content-box" inzw. möglich. Modul zdfneo.py entfernt.
 		#	Zeilen hier ab 1.1.2018 löschen:
 		#if ref_path.startswith('https://www.zdf.de/comedy/neo-magazin-mit-jan-boehmermann'): # neue ZDF-Seite
@@ -3896,18 +3913,18 @@ def ZDF_get_content(oc, page, ref_path, offset=0, ID=None):
 	if page.find('class="b-playerbox') > 0 and page.find('class="item-caption') > 0:  # mehrspaltig: Video gesamte Sendung?
 		first_rec = img_alt +  stringextract('class="item-caption', 'data-tracking=', page) # mit img_alt
 		content.insert(0, first_rec)		# an den Anfang der Liste
-		# GNNLog(content[0]) # bei Bedarf
+		# GNNPLog(content[0]) # bei Bedarf
 					
 	
 	if 	max_count:								# 0 = 'Mehr..'-Option ausgeschaltet
 		delnr = min(page_cnt, offset)
 		del content[:delnr]						# Sätze bis offset löschen (bzw. bis Ende records)
-	Log(len(content))
+	PLog(len(content))
 	for rec in content:	
 		pos = rec.find('</article>')		   # Satz begrenzen - bis nächsten Satz nicht verwertbare Inhalte möglich
 		if pos > 0:
 			rec = rec[0:pos]
-		# Log(rec)  # bei Bedarf
+		# PLog(rec)  # bei Bedarf
 			
 		if ID <> 'DEFAULT':					 			# DEFAULT: Übersichtsseite ohne Videos, Bsp. Sendungen A-Z
 			if 'title-icon icon-502_play' not in rec:  	# Videobeitrag?
@@ -3915,7 +3932,7 @@ def ZDF_get_content(oc, page, ref_path, offset=0, ID=None):
 		multi = False			# steuert Mehrfachergebnisse 
 		
 		meta_image = stringextract('<meta itemprop=\"image\"', '>', rec)
-		#Log('meta_image: ' + meta_image)
+		#PLog('meta_image: ' + meta_image)
 		# thumb  = stringextract('class=\"m-8-9\"  data-srcset=\"', ' ', rec)    # 1. Bild im Satz m-8-9 (groß)
 		thumb_set = stringextract('class=\"m-8-9\"  data-srcset=\"', '/>', rec) 
 		thumb_set = thumb_set.split(' ')		
@@ -3923,13 +3940,13 @@ def ZDF_get_content(oc, page, ref_path, offset=0, ID=None):
 		for thumb in thumb_set:				# kleine Ausgabe 240x270 suchen
 			if thumb.find('240x270') >= 0:
 				break		
-		# Log(thumb_set); Log(thumb)
+		# PLog(thumb_set); PLog(thumb)
 
 		if thumb == '':											# 1. Fallback thumb	
 			thumb  = stringextract('class=\"b-plus-button m-small', '\"', meta_image)
 		if thumb == '':											# 2. Fallback thumb (1. Bild aus img_alt)
 			thumb = stringextract('data-srcset=\"', ' ', img_alt) 	# img_alt s.o.	
-		Log('thumb: ' + thumb)
+		PLog('thumb: ' + thumb)
 			
 		if thumb.find('https://') == -1:	 # Bsp.: "./img/bgs/zdf-typical-fallback-314x314.jpg?cb=0.18.1787"
 				thumb = ZDF_BASE + thumb[1:] # 	Fallback-Image  ohne Host
@@ -3939,10 +3956,10 @@ def ZDF_get_content(oc, page, ref_path, offset=0, ID=None):
 		if teaser_typ == 'Beiträge':		# Mehrfachergebnisse ohne Datum + Uhrzeit
 			multi = True
 			summary = dt1 + teaser_typ 		# Anzahl Beiträge
-		#Log('teaser_typ: ' + teaser_typ)			
+		#PLog('teaser_typ: ' + teaser_typ)			
 			
 		subscription = stringextract('is-subscription=\"', '\"', rec)	# aus plusbar-Block	
-		Log(subscription)
+		PLog(subscription)
 		if subscription == 'true':						
 			multi = True
 			teaser_count = stringextract('</span>', '<strong>', teaser_label)	# bei Beiträgen
@@ -3953,7 +3970,7 @@ def ZDF_get_content(oc, page, ref_path, offset=0, ID=None):
 		href_title = stringextract('<a href="', '>', rec)		# href-link hinter teaser-cat kann Titel enthalten
 		href_title = stringextract('title="', '"', href_title)
 		href_title = unescape(href_title)
-		Log('href_title: ' + href_title)
+		PLog('href_title: ' + href_title)
 		if 	href_title == 'ZDF Livestream' or href_title == 'Sendung verpasst':
 			continue
 			
@@ -3961,14 +3978,14 @@ def ZDF_get_content(oc, page, ref_path, offset=0, ID=None):
 		plusbar_title = stringextract('plusbar-title=\"', '\"', rec)	# Bereichs-, nicht Einzeltitel, nachrangig
 		# plusbar_path = stringextract('plusbar-path=\"', '\"', rec)    # path ohne http(s)
 		path =  stringextract('plusbar-url=\"', '\"', rec)				# plusbar nicht vorh.? - sollte nicht vorkommen
-		Log('path: ' + path); Log('ref_path: ' + ref_path)	
+		PLog('path: ' + path); PLog('ref_path: ' + ref_path)	
 		if path == '' or path == ref_path:					# kein Pfad oder Selbstreferenz
 			continue
 		
 		# Datum, Uhrzeit Länge	
 		if 'icon-301_clock icon' in rec:						# Uhrsymbol  am Kopf mit Datum/Uhrzeit
 			teaser_label = stringextract('class="teaser-label"', '</div>', rec)	
-			Log('teaser_label: ' + teaser_label)
+			PLog('teaser_label: ' + teaser_label)
 			video_datum =  stringextract('</span>', '<strong>', teaser_label)   
 			video_time =  stringextract('<strong>', '</strong>', teaser_label)
 		else:
@@ -3979,18 +3996,18 @@ def ZDF_get_content(oc, page, ref_path, offset=0, ID=None):
 				video_time = video_time[:5] 
 			else:
 				video_datum=''; video_time=''			
-		Log(video_datum); Log(video_time);
+		PLog(video_datum); PLog(video_time);
 					
 		duration = stringextract('Videolänge:', 'Datum', rec) 		# Länge - 1. Variante 
 		duration = stringextract('m-border">', '</', duration)		# Ende </dd> od. </dt>
 		if duration == '':
 			duration = stringextract('Videolänge:', '</dl>', rec) 	# Länge - 2. Variante bzw. fehlend
 			duration = stringextract('">', '</', duration)			
-		Log('duration: ' + duration);
+		PLog('duration: ' + duration);
 		
 		pic_cnt = stringextract('Anzahl Bilder:', '<dt class', rec)	# Bilderzahl bei Bilderserien
 		pic_cnt = stringextract('">', '</', pic_cnt)				# Ende </dd> od. </dt>
-		Log('Bilder: ' + pic_cnt);
+		PLog('Bilder: ' + pic_cnt);
 			
 		title = href_title 
 		if title == '':
@@ -4020,16 +4037,16 @@ def ZDF_get_content(oc, page, ref_path, offset=0, ID=None):
 			
 		descr = stringextract('description">', '<', rec)
 		descr = mystrip(descr)
-		# Log('descr:' + descr)		# UnicodeDecodeError möglich
+		# PLog('descr:' + descr)		# UnicodeDecodeError möglich
 		if descr:
 			summary = descr
 		else:
 			summary = href_title
 			
 		if 	'title-icon icon-502_play' in rec == False and 'icon-301_clock icon' in rec == False:
-			Log('icon-502_play und icon-301_clock nicht gefunden')
+			PLog('icon-502_play und icon-301_clock nicht gefunden')
 			if ID == 'Bilderserien': 	# aber Bilderserien aufnehmen
-				Log('Bilderserien')
+				PLog('Bilderserien')
 			if plusbar_title.find(' in Zahlen') > 0:	# Statistik-Seite, voraus. ohne Galeriebilder 
 				continue
 			if plusbar_title.find('Liveticker') > 0:	#   Liveticker und Ergebnisse
@@ -4051,12 +4068,12 @@ def ZDF_get_content(oc, page, ref_path, offset=0, ID=None):
 		client = Client.Platform
 		if client == None:
 			client = ''
-		Log(client)									# für PHT: Austausch Titel / Tagline
+		PLog(client)									# für PHT: Austausch Titel / Tagline
 		if  client == 'Plex Home Theater':
 			title, tagline = tagline, title
 			
-		Log('neuer Satz')
-		Log(thumb);	Log(path);Log(title);Log(summary);Log(tagline); Log(multi);
+		PLog('neuer Satz')
+		PLog(thumb);	PLog(path);PLog(title);PLog(summary);PLog(tagline); PLog(multi);
 		title = title.decode(encoding="utf-8", errors="ignore")
 		summary = summary.decode(encoding="utf-8", errors="ignore")
 		tagline = tagline.decode(encoding="utf-8", errors="ignore")
@@ -4071,7 +4088,7 @@ def ZDF_get_content(oc, page, ref_path, offset=0, ID=None):
 		if max_count:
 			# Mehr Seiten anzeigen:		# 'Mehr...'-Callback durch Aufrufer	
 			cnt = len(oc) + offset		# 
-			# Log('Mehr-Test'); Log(len(oc)); Log(cnt); Log(page_cnt)
+			# PLog('Mehr-Test'); PLog(len(oc)); PLog(cnt); PLog(page_cnt)
 			if cnt > page_cnt:			# Gesamtzahl erreicht - Abbruch
 				offset=0
 				break					# Schleife beenden
@@ -4089,7 +4106,7 @@ def ZDF_get_content(oc, page, ref_path, offset=0, ID=None):
 #	bekannt, diese einzubinden
 @route(PREFIX + '/GetZDFVideoSources')						# 4 Requests bis zu den Quellen erforderlich!				
 def GetZDFVideoSources(url, title, thumb, tagline, segment_start=None, segment_end=None):	
-	Log('GetVideoSources'); Log(url); Log(tagline); 
+	PLog('GetVideoSources'); PLog(url); PLog(tagline); 
 	title = title.decode(encoding="utf-8", errors="ignore")					
 	oc = ObjectContainer(title2=title.decode(encoding="utf-8", errors="ignore"), view_group="InfoList")
 	urlSource = url 		# für ZDFotherSources
@@ -4101,7 +4118,7 @@ def GetZDFVideoSources(url, title, thumb, tagline, segment_start=None, segment_e
 	# -- Start Vorauswertungen: Bildgalerie u.ä. 
 	if segment_start and segment_end:				# Vorgabe Ausschnitt durch ZDF_get_content 
 		pos1 = page.find(segment_start); pos2 = page.find(segment_end);  # bisher: b-group-persons
-		Log(pos1);Log(pos2);
+		PLog(pos1);PLog(pos2);
 		page = page[pos1:pos2]
 		oc = ZDF_Bildgalerie(oc=oc, page=page, mode=segment_start, title=title)
 		return oc
@@ -4120,7 +4137,7 @@ def GetZDFVideoSources(url, title, thumb, tagline, segment_start=None, segment_e
 	apiToken2 = stringextract('"apiToken": "', '"', page)
 	Dict['apiToken1'] = apiToken1
 	Dict['apiToken2'] = apiToken2
-	Log('apiToken1: ' + apiToken1); Log('apiToken2: ' + apiToken2)
+	PLog('apiToken1: ' + apiToken1); PLog('apiToken2: ' + apiToken2)
 					
 	# -- Ende Vorauswertungen
 			
@@ -4129,7 +4146,7 @@ def GetZDFVideoSources(url, title, thumb, tagline, segment_start=None, segment_e
 	# Dict[key] = page	
 	docId = stringextract("docId: \'", "\'", page)				# Bereich window.zdfsite
 	formitaeten,duration,geoblock = get_formitaeten(sid=docId)	# Video-URL's ermitteln
-	# Log(formitaeten)
+	# PLog(formitaeten)
 	if formitaeten == '':										# Nachprüfung auf Videos
 		msg = 'Video nicht vorhanden / verfügbar'  + ' Seite:\r' + url
 		msg = msg.decode(encoding="utf-8", errors="ignore")		
@@ -4157,7 +4174,7 @@ def GetZDFVideoSources(url, title, thumb, tagline, segment_start=None, segment_e
 #-------------------------
 @route(PREFIX + '/ZDFotherSources')		# weitere Videoquellen - Übergabe der Webseite in Dict[key]
 def ZDFotherSources(title, tagline, thumb, docId):
-	Log('OtherSources'); 
+	PLog('OtherSources'); 
 	title_org = title		# Backup für Textdatei zum Video
 	summary_org = tagline	# Tausch summary mit tagline (summary erstrangig bei Wiedergabe)
 
@@ -4166,7 +4183,7 @@ def ZDFotherSources(title, tagline, thumb, docId):
 	oc = home(cont=oc, ID='ZDF')								# Home-Button
 		
 	formitaeten,duration,geoblock = get_formitaeten(sid=docId)	# Video-URL's ermitteln
-	# Log(formitaeten)
+	# PLog(formitaeten)
 	if formitaeten == '':										# Nachprüfung auf Videos
 		msg = 'Video nicht vorhanden / verfügbar'  + ' Seite:\r' + url
 		msg = msg.decode(encoding="utf-8", errors="ignore")		
@@ -4195,14 +4212,14 @@ def ZDFotherSources(title, tagline, thumb, docId):
 #	Bei Änderungen durch das ZDF Ladekette mittels chrome neu ermitteln (network / HAR-Auswertung)
 #
 def get_formitaeten(sid, ID=''):
-	Log('get_formitaeten')
-	Log('sid/docId: ' + sid)
-	Log('Client: '); Log(Client.Platform);								# Client.Platform: None möglich
-	Log('Plattform: ' + sys.platform)
+	PLog('get_formitaeten')
+	PLog('sid/docId: ' + sid)
+	PLog('Client: '); PLog(Client.Platform);								# Client.Platform: None möglich
+	PLog('Plattform: ' + sys.platform)
 	
 	# bei Änderung profile_url neu ermitteln - ZDF: zdfplayer-Bereich, NEO: data-sophoraid
 	profile_url = 'https://api.zdf.de/content/documents/%s.json?profile=player'	% sid
-	Log(profile_url)
+	PLog(profile_url)
 	if sid == '':														# Nachprüfung auf Videos
 		return '','',''
 	
@@ -4215,25 +4232,25 @@ def get_formitaeten(sid, ID=''):
 		apiToken1 = 'Bearer ' + str(Dict['apiToken1'])		# s. GetZDFVideoSources. str falls None
 		# headers = {'Api-Auth': "Bearer d2726b6c8c655e42b68b0db26131b15b22bd1a32",'Host':"api.zdf.de", 'Accept-Encoding':"gzip, deflate, sdch, br", 'Accept':"application/vnd.de.zdf.v1.0+json"}
 		headers = {'Api-Auth': apiToken1,'Host':"api.zdf.de", 'Accept-Encoding':"gzip, deflate, sdch, br", 'Accept':"application/vnd.de.zdf.v1.0+json"}
-		Log('apiToken1: ' + apiToken1)
-	# Log(headers)		# bei Bedarf
+		PLog('apiToken1: ' + apiToken1)
+	# PLog(headers)		# bei Bedarf
 	
 	# Bei Anforderung von profile_url mittels urllib2.urlopen ssl.SSLContext erforderlich - entf. bei JSON.ObjectFromURL
 	request = JSON.ObjectFromURL(profile_url, headers=headers)				# 3. Playerdaten ermitteln
 	request = json.dumps(request, sort_keys=True, indent=2, separators=(',', ': '))  # sortierte Ausgabe
-	Log(request[:20])	# "additionalPaths ...
+	PLog(request[:20])	# "additionalPaths ...
 	request = str(request)				# json=dict erlaubt keine Stringsuche, json.dumps klappt hier nicht
 	request = request.decode('utf-8', 'ignore')	
-	# Log(request)		# bei Bedarf, ev. reicht nachfolg. mainVideoContent
+	# PLog(request)		# bei Bedarf, ev. reicht nachfolg. mainVideoContent
 	
 	pos = request.rfind('mainVideoContent')				# 'mainVideoContent' am Ende suchen
 	request_part = request[pos:]
-	# Log(request_part)			# bei Bedarf
+	# PLog(request_part)			# bei Bedarf
 	video_ptmd = stringextract('http://zdf.de/rels/streams/ptmd": "', '",', request_part)	
 	# Bsp.: /tmd/2/portal/vod/ptmd/mediathek/161021_hsh_hsh'
-	# Log(video_ptmd)	
+	# PLog(video_ptmd)	
 	old_videodat_url = 'https://api.zdf.de' + video_ptmd					# 4. Videodaten ermitteln
-	Log(old_videodat_url)	
+	PLog(old_videodat_url)	
 	# neu ab 20.1.2016: uurl-Pfad statt ptmd-Pfad ( ptmd-Pfad fehlt bei Teilvideos)
 	# neu ab19.04.2018: Videos ab heute auch ohne uurl-Pfad möglich, Code einschl. Abbruch entfernt - s.a. KIKA_und_tivi.
 	
@@ -4243,7 +4260,7 @@ def get_formitaeten(sid, ID=''):
 	videodat_url = 'https://api.zdf.de' + videodat_url
 	# videodat_url = 'https://api.zdf.de/tmd/2/portal/vod/ptmd/mediathek/'  	# unzuverlässig
 	# videodat_url = videodat_url + videodat
-	Log('old_videodat_url: ' + old_videodat_url); Log('videodat_url: ' + videodat_url); 	
+	PLog('old_videodat_url: ' + old_videodat_url); PLog('videodat_url: ' + videodat_url); 	
 
 	# ab 28.05.2017: Verwendung JSON.ObjectFromURL - Laden mittels urllib2.urlopen + ssl.SSLContext entbehrlich
 	#	damit entfällt auch die Plattformunterscheidung Linux/Windows sowie die Nutzung einer Zertifikatsdatei (V3.0.2. 15.05.2017)
@@ -4251,7 +4268,7 @@ def get_formitaeten(sid, ID=''):
 	apiToken2 = 'Bearer ' + str(Dict['apiToken2'])		# s. GetZDFVideoSources. str falls None
 	# headers = {'Api-Auth': "Bearer d2726b6c8c655e42b68b0db26131b15b22bd1a32",'Host':"api.zdf.de", 'Accept-Encoding':"gzip, deflate, sdch, br", 'Accept':"application/vnd.de.zdf.v1.0+json"}
 	headers = {'Api-Auth': apiToken2,'Host':"api.zdf.de", 'Accept-Encoding':"gzip, deflate, sdch, br", 'Accept':"application/vnd.de.zdf.v1.0+json"}
-	Log('apiToken2: ' + apiToken2)
+	PLog('apiToken2: ' + apiToken2)
 	try:
 		request = JSON.ObjectFromURL(videodat_url, headers=headers)				
 		request = json.dumps(request, sort_keys=True, indent=2, separators=(',', ': '))  # sortierte Ausgabe
@@ -4269,21 +4286,21 @@ def get_formitaeten(sid, ID=''):
 		except:
 			page = ""
 		
-		Log('videodat_url: Laden fehlgeschlagen')
+		PLog('videodat_url: Laden fehlgeschlagen')
 		return '', '', ''
-	Log(page[:20])	# "{..attributes" ...
+	PLog(page[:20])	# "{..attributes" ...
 		
 	'''
 	subtitles = stringextract('\"captions\"', '\"documentVersion\"', page)	# Untertitel ermitteln, bisher in Plex-
 	subtitles = blockextract('\"class\"', subtitles)						# Channels nicht verwendbar
-	Log('subtitles: ' + str(len(subtitles)))
+	PLog('subtitles: ' + str(len(subtitles)))
 	if len(subtitles) == 2:
 		sub_xml = subtitles[0]
 		sub_vtt = subtitles[1]
-		#Log(sub_xml);Log(sub_vtt);
+		#PLog(sub_xml);PLog(sub_vtt);
 		sub_xml_path = stringextract('\"uri\": \"', '\"', sub_xml)
 		sub_vtt_path = stringextract('\"uri\": \"', '\"', sub_vtt)
-		Log('Untertitel xml + vtt:');Log(sub_xml_path);Log(sub_vtt_path);
+		PLog('Untertitel xml + vtt:');PLog(sub_xml_path);PLog(sub_vtt_path);
 	'''
 	# Fehler "crossdomain access denied" bei .m3u8-Dateien: Ursache https-Verbindung - konkrete Wechselwirkung n.b.
 	#	div. Versuche mit Änderungen der crossdomain.xml in Plex erfolglos,
@@ -4292,15 +4309,15 @@ def get_formitaeten(sid, ID=''):
 	#	
 	duration = stringextract('duration',  'fsk', page)	# Angabe im Kopf, sec/1000
 	duration = stringextract('"value":',  '}', duration).strip()
-	Log(duration)	
+	PLog(duration)	
 	if duration:
 		duration = (int(duration) / 1000) / 60			# Rundung auf volle Minuten reicht hier 
 		duration = str(duration) + " min"	
-	Log('duration: ' + duration)		
+	PLog('duration: ' + duration)		
 	formitaeten = blockextract('formitaeten', page)		# Video-URL's ermitteln
 	geoblock =  stringextract('geoLocation',  '}', page) 
 	geoblock =  stringextract('"value": "',  '"', geoblock).strip()
-	Log('geoblock: ' + geoblock)									# i.d.R. "none", sonst "de" - wie bei ARD verwenden
+	PLog('geoblock: ' + geoblock)									# i.d.R. "none", sonst "de" - wie bei ARD verwenden
 	if geoblock == 'de':			# Info-Anhang für summary 
 		geoblock = ' | Geoblock!'
 	else:
@@ -4312,29 +4329,29 @@ def get_formitaeten(sid, ID=''):
 # 	Ausgabe der Videoformate
 #	
 def show_formitaeten(oc, title_call, formitaeten, tagline, thumb, only_list, geoblock):	
-	Log('show_formitaeten')
-	Log(only_list)
-	# Log(formitaeten)		# bei Bedarf
+	PLog('show_formitaeten')
+	PLog(only_list)
+	# PLog(formitaeten)		# bei Bedarf
 	
 	i = 0 	# Titel-Zähler für mehrere Objekte mit dem selben Titel (manche Clients verwerfen solche)
 	download_list = []		# 2-teilige Liste für Download: 'summary # url'	
 	for rec in formitaeten:									# Datensätze gesamt
-		# Log(rec)		# bei Bedarf
+		# PLog(rec)		# bei Bedarf
 		typ = stringextract('"type": "', '"', rec)
 		typ = typ.replace('[]', '').strip()
 		facets = stringextract('"facets": ', ',', rec)	# Bsp.: "facets": ["progressive"]
 		facets = facets.replace('"', '').replace('\n', '').replace(' ', '') 
-		Log(typ); Log(facets)
+		PLog(typ); PLog(facets)
 		
-		# Log(typ in only_list)
+		# PLog(typ in only_list)
 		if (typ in only_list) == True:								
 			audio = blockextract('"audio":', rec)			# Datensätze je Typ
-			# Log(audio)	# bei Bedarf
+			# PLog(audio)	# bei Bedarf
 			for audiorec in audio:					
 				url = stringextract('"uri": "',  '"', audiorec)			# URL
 				url = url.replace('https', 'http')
 				quality = stringextract('"quality": "',  '"', audiorec)
-				Log(url); Log(quality);
+				PLog(url); PLog(quality);
 				i = i +1
 				if url:			
 					if url.find('master.m3u8') > 0:		# 
@@ -4355,7 +4372,7 @@ def show_formitaeten(oc, title_call, formitaeten, tagline, thumb, only_list, geo
 	return oc, download_list
 #-------------------------
 def ZDF_Bildgalerie(oc, page, mode, title):	# keine Bildgalerie, aber ähnlicher Inhalt
-	Log('ZDF_Bildgalerie'); Log(mode); Log(title)
+	PLog('ZDF_Bildgalerie'); PLog(mode); PLog(title)
 	
 	if mode == 'is_gallery':							# "echte" Bildgalerie
 		content =  stringextract('class=\"content-box gallery-slider-box', 'title=\"Bilderserie schließen\"', page)
@@ -4367,14 +4384,14 @@ def ZDF_Bildgalerie(oc, page, mode, title):	# keine Bildgalerie, aber ähnlicher
 		content = page	
 		content =  blockextract('guest-info m-clickarea', content)
 			
-	Log(len(content))
+	PLog(len(content))
 	# neuer Container mit neuem Titel
 	title = title.decode(encoding="utf-8", errors="ignore")
 	oc = ObjectContainer(title2=title, view_group="InfoList")
 
 	image = 1
 	for rec in content:
-		# Log(rec)  # bei Bedarf
+		# PLog(rec)  # bei Bedarf
 		summ = ''; 
 		if mode == 'is_gallery':				# "echte" Bildgalerie
 			img_src =  stringextract('data-srcset="', ' ', rec)			
@@ -4384,13 +4401,13 @@ def ZDF_Bildgalerie(oc, page, mode, title):	# keine Bildgalerie, aber ähnlicher
 			if teaser_cat.find('|') > 0:  			# über 3 Zeilen verteilt
 				tclist = teaser_cat.split('|')
 				teaser_cat = str.strip(tclist[0]) + ' | ' + str.strip(tclist[1])			# zusammenführen
-			#Log(teaser_cat)					
+			#PLog(teaser_cat)					
 			descript = stringextract('class=\"item-description\">', '</p', rec)
 			pos = descript.find('<span')			# mögliche Begrenzer: '</p', '<span'
 			if pos >= 0:
 				descript = descript[0:pos]
 			descript = descript.strip()
-			#Log(descript)					
+			#PLog(descript)					
 
 			title_add = stringextract('data-plusbar-title=\"', ('\"'), rec)	# aus Plusbar - im Teaser schwierig
 			title = teaser_cat
@@ -4421,7 +4438,7 @@ def ZDF_Bildgalerie(oc, page, mode, title):	# keine Bildgalerie, aber ähnlicher
 			
 		if img_src == '':									# Sicherung			
 			msgH = 'Error'; msg = 'Problem in Bildgalerie: Bild nicht gefunden'
-			Log(msg)
+			PLog(msg)
 			msg =  msg.decode(encoding="utf-8", errors="ignore")
 			return ObjectContainer(header=msgH, message=msg)
 					
@@ -4429,7 +4446,7 @@ def ZDF_Bildgalerie(oc, page, mode, title):	# keine Bildgalerie, aber ähnlicher
 		title = title.decode(encoding="utf-8", errors="ignore")
 		summ = unescape(summ)
 		summ = summ .decode(encoding="utf-8", errors="ignore")
-		Log('neu');Log(title);Log(img_src);Log(summ[0:40]);
+		PLog('neu');PLog(title);PLog(img_src);PLog(summ[0:40]);
 		oc.add(PhotoObject(
 			key=img_src,
 			rating_key='%s.%s' % (Plugin.Identifier, 'Bild ' + str(image)),	# rating_key = eindeutige ID
@@ -4480,12 +4497,12 @@ def Parseplaylist(container, url_m3u8, thumb, geoblock, **kwargs):	# master.m3u8
 	except Exception as exception:
 			msg = 'Playlist kann nicht geladen werden. URL: | %s | %s'	% (url_m3u8, str(exception))
 			msg = msg + url_m3u8
-			Log(msg)
+			PLog(msg)
 			return ObjectContainer(header=L('Error'), message=msg)	  	# header=... ohne Wirkung	(?)			
   else:													
 	playlist = Resource.Load(url_m3u8) 
 	 
-  # Log(playlist)		# bei Bedarf
+  # PLog(playlist)		# bei Bedarf
   lines = playlist.splitlines()
   lines.pop(0)		# 1. Zeile entfernen (#EXTM3U)
   BandwithOld 	= ''	# für Zwilling -Test (manchmal 2 URL für 1 Bandbreite + Auflösung) 
@@ -4494,10 +4511,10 @@ def Parseplaylist(container, url_m3u8, thumb, geoblock, **kwargs):	# master.m3u8
   #for line in lines[1::2]:	# Start 1. Element, step 2
   for line in lines:	
  	line = lines[i].strip()
- 	# Log(line)		# bei Bedarf
+ 	# PLog(line)		# bei Bedarf
 	if line.startswith('#EXT-X-STREAM-INF'):# tatsächlich m3u8-Datei?
 		url = lines[i + 1].strip()	# URL in nächster Zeile
-		Log(url)
+		PLog(url)
 
 		Bandwith = GetAttribute(line, 'BANDWIDTH')
 		Resolution = GetAttribute(line, 'RESOLUTION')
@@ -4520,7 +4537,7 @@ def Parseplaylist(container, url_m3u8, thumb, geoblock, **kwargs):	# master.m3u8
 		if Bandwith == BandwithOld:	# Zwilling -Test
 			title = 'Bandbreite ' + Bandwith + ' (2. Alternative)'
 			
-		Log(thumb); Log(Resolution); Log(BandwithInt); 
+		PLog(thumb); PLog(Resolution); PLog(BandwithInt); 
 		thumb=thumb_org
 		if BandwithInt and BandwithInt <=  100000: 		# vermutl. nur Audio (Bsp. ntv 48000, ZDF 96000)
 			Resolution = Resolution + ' (vermutlich nur Audio)'
@@ -4595,8 +4612,8 @@ def stringextract(mFirstChar, mSecondChar, mString):  	# extrahiert Zeichenkette
 	if pos1 >= 0 and pos2 >= 0:
 		rString = mString[pos1+ind:pos2]	# extrahieren 
 		
-	#Log(mString); Log(mFirstChar); Log(mSecondChar); 	# bei Bedarf
-	#Log(pos1); Log(ind); Log(pos2);  Log(rString); 
+	#PLog(mString); PLog(mFirstChar); PLog(mSecondChar); 	# bei Bedarf
+	#PLog(pos1); PLog(ind); PLog(pos2);  PLog(rString); 
 	return rString
 #----------------------------------------------------------------  
 def teilstring(zeile, startmarker, endmarker):  		# rfind: endmarker=letzte Fundstelle, return '' bei Fehlschlag
@@ -4607,7 +4624,7 @@ def teilstring(zeile, startmarker, endmarker):  		# rfind: endmarker=letzte Fund
     teils = zeile[pos1:pos2+len(endmarker)]	# 
   else:
     teils = ''
-  #Log(pos1) Log(pos2) 
+  #PLog(pos1) PLog(pos2) 
   return teils 
 #----------------------------------------------------------------  
 def blockextract(blockmark, mString):  	# extrahiert Blöcke begrenzt durch blockmark aus mString
@@ -4617,13 +4634,13 @@ def blockextract(blockmark, mString):  	# extrahiert Blöcke begrenzt durch bloc
 	#	Verwendung, wenn xpath nicht funktioniert (Bsp. Tabelle EPG-Daten www.dw.com/de/media-center/live-tv/s-100817)
 	rlist = []				
 	if 	blockmark == '' or 	mString == '':
-		Log('blockextract: blockmark or mString leer')
+		PLog('blockextract: blockmark or mString leer')
 		return rlist
 	
 	pos = mString.find(blockmark)
 	if 	mString.find(blockmark) == -1:
-		Log('blockextract: blockmark <%s> nicht in mString enthalten' % blockmark)
-		# Log(pos); Log(blockmark);Log(len(mString));Log(len(blockmark));
+		PLog('blockextract: blockmark <%s> nicht in mString enthalten' % blockmark)
+		# PLog(pos); PLog(blockmark);PLog(len(mString));PLog(len(blockmark));
 		return rlist
 	pos2 = 1
 	while pos2 > 0:
@@ -4663,7 +4680,7 @@ def repl_char(cut_char, line):	# problematische Zeichen in Text entfernen, wenn 
 		line_r = line_ret[pos+len(cut_char):]
 		line_ret = line_l + line_r
 		pos = line_ret.find(cut_char)
-		#Log(cut_char); Log(pos); Log(line_l); Log(line_r); Log(line_ret)	# bei Bedarf	
+		#PLog(cut_char); PLog(pos); PLog(line_l); PLog(line_r); PLog(line_ret)	# bei Bedarf	
 	return line_ret
 #----------------------------------------------------------------  	
 def unescape(line):	# HTML-Escapezeichen in Text entfernen, bei Bedarf erweitern. ARD auch &#039; statt richtig &#39;
@@ -4673,7 +4690,7 @@ def unescape(line):	# HTML-Escapezeichen in Text entfernen, bei Bedarf erweitern
 		.replace("&ouml;", "ö").replace("&auml;", "ä").replace("&uuml;", "ü").replace("&szlig;", "ß")
 		.replace("&Ouml;", "Ö").replace("&Auml;", "Ä").replace("&Uuml;", "Ü").replace("&apos;", "'"))
 		
-	# Log(line_ret)		# bei Bedarf
+	# PLog(line_ret)		# bei Bedarf
 	return line_ret	
 #----------------------------------------------------------------  	
 def cleanhtml(line): # ersetzt alle HTML-Tags zwischen < und >  mit 1 Leerzeichen
@@ -4686,7 +4703,7 @@ def mystrip(line):	# eigene strip-Funktion, die auch Zeilenumbrüche innerhalb d
 	line_ret = line	
 	line_ret = line.replace('\t', '').replace('\n', '').replace('\r', '')
 	line_ret = line_ret.strip()	
-	# Log(line_ret)		# bei Bedarf
+	# PLog(line_ret)		# bei Bedarf
 	return line_ret
 #---------------------------------------------------------------- 
 def make_filenames(title):
@@ -4710,6 +4727,11 @@ def make_filenames(title):
 	# fname = ''.join(c for c in fname if c in valid_chars)
 	return fname
 #----------------------------------------------------------------  
+def PLog(msg):		# abschaltbares Plugin-Logging
+	if Prefs['pref_DEBUG'] == False:
+		return
+	Log(msg)
+	return
 		
 ####################################################################################################
 # Directory-Browser - Verzeichnis-Listing
@@ -4723,9 +4745,9 @@ def make_filenames(title):
 #	 
 @route(PREFIX + '/DirectoryNavigator')
 def DirectoryNavigator(settingKey, newDirectory = None, fileFilter=None):
-	Log('settingKey: ' + settingKey); Log('newDirectory: ' + str(newDirectory)); 
-	Log('fileFilter: ' + str(fileFilter))
-	Log('Plattform: ' + sys.platform)
+	PLog('settingKey: ' + settingKey); PLog('newDirectory: ' + str(newDirectory)); 
+	PLog('fileFilter: ' + str(fileFilter))
+	PLog('Plattform: ' + sys.platform)
 
 	# Bei leerer Verz.-Angabe setzen wir abhängig vom System / bzw. c:\ 
 	# Windows?: http://stackoverflow.com/questions/1325581/how-do-i-check-if-im-running-on-windows-in-python
@@ -4738,7 +4760,7 @@ def DirectoryNavigator(settingKey, newDirectory = None, fileFilter=None):
 	else:
 		containerTitle = ROOT_DIRECTORY
 		newDirectory = ROOT_DIRECTORY
-	Log('ROOT_DIRECTORY: ' + ROOT_DIRECTORY)
+	PLog('ROOT_DIRECTORY: ' + ROOT_DIRECTORY)
 		
 	oc = ObjectContainer(view_group = 'InfoList', art = R(ART), title1 = containerTitle, no_cache = True)
 	oc= home(cont=oc, ID=NAME)						# Home-Button - Rücksprung Pluginstart 
@@ -4746,9 +4768,9 @@ def DirectoryNavigator(settingKey, newDirectory = None, fileFilter=None):
 	ParentDir = os.path.dirname(newDirectory)		# übergeordnetes Verz. ermitteln
 	if os.path.isdir(newDirectory) == False:		# 	dto. bei Pfad/Datei
 		ParentDir = os.path.dirname(ParentDir)
-	Log('ParentDir: ' + ParentDir)
+	PLog('ParentDir: ' + ParentDir)
 
-	# DirSep = os.sep	# Log(DirSep)				# Seperatoren nicht benötigt
+	# DirSep = os.sep	# PLog(DirSep)				# Seperatoren nicht benötigt
 	if newDirectory:								# Button Back
 		Log.Debug('Button Back: ' + ParentDir)
 		summary = 'zum übergeordneten Ordner wechseln: ' + ParentDir
@@ -4760,7 +4782,7 @@ def DirectoryNavigator(settingKey, newDirectory = None, fileFilter=None):
 		newDirectory = ROOT_DIRECTORY
     
 	basePath = newDirectory
-	Log('basePath: ' + basePath)
+	PLog('basePath: ' + basePath)
 	try:
 		if os.path.isdir(basePath):
 			subItems = os.listdir(basePath)			# Verzeichnis auslesen
@@ -4774,24 +4796,24 @@ def DirectoryNavigator(settingKey, newDirectory = None, fileFilter=None):
 		error_txt = 'Verzeichnis-Problem | ' + str(exception)			 			 	 
 		msgH = 'Fehler'; msg = error_txt
 		msg =  msg.decode(encoding="utf-8", errors="ignore")
-		Log(msg)
+		PLog(msg)
 		return ObjectContainer(header=msgH, message=msg)
 	
 	# Beim Filter 'DIR' wird ein Button zum Speichern des akt. Verz. voran gestellt, 
 	#	die emthaltenen Unterverz. gelistet. Jedes Unterverz erhält einen Callback.
 	# 
-	Log(fileFilter)
+	PLog(fileFilter)
 	if fileFilter == 'DIR':							# bei Verzeichnissuche akt. Verz. zum Speichern anbieten
 		summary = 'Klicken zum Speichern | Ordner: ' + basePath
 		title = summary
-		Log(summary);Log(basePath);
+		PLog(summary);PLog(basePath);
 		oc.add(DirectoryObject(key = Callback(SetPrefValue, key = settingKey, value = basePath),
 			title=title, summary=summary, thumb = R(ICON_DIR_SAVE)))
 
 	for item in subItems:							# Verzeichniseinträge mit Filter listen
 		fullpath = os.path.join(basePath, item)
 		isDir = os.path.isdir(fullpath)
-		# Log(isDir); Log(fullpath)
+		# PLog(isDir); PLog(fullpath)
 		if fileFilter != 'DIR':						# nicht Verzeichnissuche
 			if isDir == False:						# und kein Unterverzeichnis -> Suche nach Eintrag
 				# Log.Debug('Suche nach: ' + fileFilter + ' in ' + basePath + item)
