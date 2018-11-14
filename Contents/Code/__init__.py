@@ -20,8 +20,8 @@ import EPG
 
 # +++++ ARDundZDF - Plugin für den Plexmediaserver +++++
 
-VERSION =  '0.2.9'		 
-VDATE = '06.11.2018'
+VERSION =  '0.3.0'		 
+VDATE = '14.11.2018'
 
 # 
 #	
@@ -528,17 +528,9 @@ def ARDStart(title, sender):
 		title 	= 'Higlights'
 		# 14.11.2018 Bild vom 1. Beitrag befindet sich im json-Abschnitt,
 		#	wird mittels href_id ermittelt:
-		href_id  =  stringextract('href="/ard/player/', '/', swiper)
-		item	= stringextract('Link:%s' %  href_id,  'idth}', page)	# Bild vom 1. Beitrag 
-		# Log('item: ' + item)
-		img =  stringextract('src":"', '{w', item)
-		Log(img)
-		img = img.replace('?w=', '')			# Endung .jpg?w={w
-		img = img.replace('{w', '')				# Endung /16x9/{w
-		if img.endswith('.jpg') == False:
-			img = img + '640.jpg'
-		# Log(img)
-		
+		href_id =  stringextract('/player/', '/', swiper) # Bild vom 1. Beitrag wie Higlights
+		img 	= img_via_id(href_id, page) 
+					
 		oc.add(DirectoryObject(key=Callback(ARDStartRubrik, path=path, title=title, img=img,
 			ID='Swiper'), title=title,  thumb=img))
 								
@@ -553,31 +545,36 @@ def ARDStart(title, sender):
 		noContent=stringextract('noContent">', '<', grid)	
 		if noContent:
 			title = "%s | % s" % (title, noContent)
-		href_id  =  stringextract('href="/ard/player/', '/', grid) # Bild vom 1. Beitrag wie Higlights
-		item	= stringextract('Link:%s' %  href_id,  'idth}', page)
-		# Log('item: ' + item)
-		img =  stringextract('src":"', '{w', item)
-		img = img.replace('?w=', '')			# Endung .jpg?w={w
-		img = img.replace('{w', '')				# Endung /16x9/{w
-		if img.endswith('.jpg') == False:
-			img = img + '640.jpg'
-		# Log(img)
+		href_id =  stringextract('/player/', '/', grid)
+		img 	= img_via_id(href_id, page) 	
 		
 		ID 		= 'ARDStart'
-		if 'teaser live' in grid:						# eigenes Icon für Live-Beitrag 
+		if 'teaser live' in grid:						# eigenes Icon für Live-Beitrag
+			img = R(ICON_MAIN_TVLIVE)
 			href 	= stringextract('href="', '"', grid)
-			hrefsender = href.split('/')[-1]			# Bsp. ...zdGU/das-erste
-			playlist_img = get_playlist_img(hrefsender) # Icon aus livesenderTV.xml holen
-			if playlist_img:
-				img = playlist_img
-				# PLog(title); PLog(href)
-		# PLog(title); PLog(ID); 	
+			hrefsender = href.split('/')[1]			# href="/alpha/live/Y3Jp
+			PLog(hrefsender)
+			# playlist_img = get_playlist_img(hrefsender) # Icon aus livesenderTV.xml holen
+			#if playlist_img:
+			#	img = playlist_img
+		PLog(title); PLog(ID); PLog(img)
 		oc.add(DirectoryObject(key=Callback(ARDStartRubrik, path=path, title=title, img=img, 
 			ID=ID), title=title_oc,  thumb=img))
 		
 	PLog(len(oc))
 	return oc
 	
+#---------------------------------------------------------------------------------------------------
+def img_via_id(href_id, page):
+	PLog("img_via_id:")
+	item	= stringextract('Link:%s' %  href_id,  'idth}', page)
+	# PLog('item: ' + item)
+	img =  stringextract('src":"', '{w', item)
+	img = img.replace('?w=', '')			# Endung .jpg?w={w
+	img = img.replace('{w', '')				# Endung /16x9/{w
+	if img.endswith('.jpg') == False:
+		img = img + '640.jpg'
+	return img
 #---------------------------------------------------------------------------------------------------
 @route(PREFIX + '/ARDStartRubrik')	
 # Auflistung einer Rubrik aus ARDStart - title (ohne unescape) ist eindeutige Referenz 
@@ -613,20 +610,23 @@ def ARDStartRubrik(path, title, img, ID=''):
 		title 	= stringextract('title="', '"', s)
 		title	= unescape(title)
 		title 	= title.decode(encoding="utf-8")
-		img 	= stringextract('src="', '"', s)	
+		href_id =  stringextract('/player/', '/', s) # Bild via id 
+		img 	= img_via_id(href_id, page) 	
+			
 		duration= stringextract('duration">', '</div>', s)
 		if duration == '':
 			duration = 'Dauer unbekannt'
 		if	'class="day">Live</p>' in s:
+			img = R(ICON_MAIN_TVLIVE)
 			ID = 'Livestream'
 			title = "Live: %s"	% title
 			duration = 'zu den Streaming-Formaten'
-			hrefsender = href.split('/')[-1]			# Bsp. ...zdGU/das-erste
+			#hrefsender = href.split('/')[1]			# href="/alpha/live/Y3Jp
 			# todo: get_playlist_img mit EPG erweitern
-			playlist_img = get_playlist_img(hrefsender) # Icon aus livesenderTV.xml holen
-			if playlist_img:
-				img = playlist_img
-				PLog(title); PLog(hrefsender); PLog(img)
+			#playlist_img = get_playlist_img(hrefsender) # Icon aus livesenderTV.xml holen
+			#if playlist_img:
+			#	img = playlist_img
+			#	PLog(title); PLog(hrefsender); PLog(img)
 		PLog(title); PLog(href)
 		oc.add(DirectoryObject(key=Callback(ARDStartSingle, path=href, title=title, 
 			duration=duration, ID=ID), title=title,  summary=duration, thumb=img))				
@@ -838,7 +838,7 @@ def SendungenAZ_ARDnew(title, path, button):
 		return 	ObjectContainer(header='Error', message='Keine Sendungen gefunden.')						
 	
 	CB = 'ARDnew_Sendungen'
-	oc = ARDnew_Content(oc=oc, Blocklist=sendungen, CB=CB)
+	oc = ARDnew_Content(oc=oc, Blocklist=sendungen, CB=CB, page=page)
 	
 	return oc
 #---------------------------------------------------------------------------------------------------
@@ -859,21 +859,22 @@ def ARDnew_Sendungen(title, path, img): 	# Seite mit mehreren Sendungen
 		return 	ObjectContainer(header='Info', message=msg)	
 		
 	CB = 'ARDStartSingle'
-	oc = ARDnew_Content(oc=oc, Blocklist=sendungen, CB=CB)
+	oc = ARDnew_Content(oc=oc, Blocklist=sendungen, CB=CB, page=page)
 	
 	return oc
 #---------------------------------------------------------------------------------------------------
 # Extrahiert Sendungen aus Block in DirectoryObjects (zunächst nur für SendungenAZ_ARDnew).
 # Nicht geeignet für die Start-Inhalte.
 # 05.11.2018 Webseite geändert: redakt. Inhalt im json-Format - siehe SendungenAZ
-def ARDnew_Content(oc, Blocklist, CB): 		
+def ARDnew_Content(oc, Blocklist, CB, page): 		
 	PLog('ARDnew_Content:')
 	PLog('CB: ' + CB)
 	
 	if CB == 'ARDStartSingle':
 		for sendung in Blocklist:
 			href 		= BETA_BASE_URL + stringextract('href="', '"', sendung)
-			img 		= stringextract('src="', '"', sendung)
+			href_id =  stringextract('/player/', '/', sendung)# Bild via id 
+			img 	= img_via_id(href_id, page) 			
 			duration 	= stringextract('class="duration">', '</', sendung)
 			headline 	= stringextract('class="headline', '</', sendung)
 			headline	 = headline.replace('">', '')
@@ -897,7 +898,11 @@ def ARDnew_Content(oc, Blocklist, CB):
 			headline = stringextract('shortTitle":', ',', sendung)
 			headline = headline.replace('"', '').strip()
 			headline = headline.decode(encoding="utf-8")
-			img 	= stringextract('"src":', ',', sendung)
+			# img nur ähnlich wie in ARDStart (nicht gleich!)
+			href_id  =  stringextract('$Teaser:', '.links', sendung) 	# Bild via id 
+			# PLog(href_id)
+			item	= stringextract('%s.images.aspect16x9"' %  href_id,  ',', page)
+			img  =  stringextract('src":"', '"', item)			
 			img	 	= (img.replace('"', '').replace('{width}', '640'))
 			img	 	= img.strip()
 			sid 	= stringextract('"id":"$Teaser:', '.', sendung)
@@ -916,13 +921,17 @@ def ARDnew_Content(oc, Blocklist, CB):
 #---------------------------------------------------------------------------------------------------
 # Icon aus livesenderTV.xml holen
 # Bei Bedarf erweitern für EPG (s. SenderLiveListe)
+# z.Z. nicht genutzt
 def get_playlist_img(hrefsender):
+	PLog('get_playlist_img: ' + hrefsender)
 	playlist_img = ''
-	playlist = Resource.Load(PLAYLIST)		
+	playlist = Resource.Load(PLAYLIST)
+	# Log(playlist)		
 	playlist = blockextract('<item>', playlist)
 	for p in playlist:
 		s = stringextract('hrefsender>', '</hrefsender', p)
-		if s == hrefsender:
+		Log(hrefsender); Log(s);
+		if hrefsender in s.lower():
 			playlist_img = stringextract('thumbnail>', '</thumbnail', p)
 			playlist_img = R(playlist_img)
 			break
@@ -4502,7 +4511,7 @@ def Parseplaylist(container, url_m3u8, thumb, geoblock, **kwargs):	# master.m3u8
 #		 crossdomain access denied. Keine Probleme mit OpenPHT und VLC
 #  10.08.2017 Filter für Video-Sofort-Format - wieder entfernt 17.02.2018
 
-  Log ('Parseplaylist: ' + url_m3u8)
+  PLog('Parseplaylist: ' + url_m3u8)
   playlist = ''
   # seit ZDF-Relaunch 28.10.2016 dort nur noch https
   if url_m3u8.find('http://') == 0 or url_m3u8.find('https://') == 0:		# URL oder lokale Datei?	
