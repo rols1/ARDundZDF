@@ -526,7 +526,19 @@ def ARDStart(title, sender):
 	if 'class="swiper-stage"' in page:						# Higlights im Wischermodus
 		swiper 	= stringextract('class="swiper-stage"', 'gridlist', page)
 		title 	= 'Higlights'
-		img 	= stringextract('<img src="', '"', swiper)	# Bild vom 1. Beitrag
+		# 14.11.2018 Bild vom 1. Beitrag befindet sich im json-Abschnitt,
+		#	wird mittels href_id ermittelt:
+		href_id  =  stringextract('href="/ard/player/', '/', swiper)
+		item	= stringextract('Link:%s' %  href_id,  'idth}', page)	# Bild vom 1. Beitrag 
+		# Log('item: ' + item)
+		img =  stringextract('src":"', '{w', item)
+		Log(img)
+		img = img.replace('?w=', '')			# Endung .jpg?w={w
+		img = img.replace('{w', '')				# Endung /16x9/{w
+		if img.endswith('.jpg') == False:
+			img = img + '640.jpg'
+		# Log(img)
+		
 		oc.add(DirectoryObject(key=Callback(ARDStartRubrik, path=path, title=title, img=img,
 			ID='Swiper'), title=title,  thumb=img))
 								
@@ -541,7 +553,15 @@ def ARDStart(title, sender):
 		noContent=stringextract('noContent">', '<', grid)	
 		if noContent:
 			title = "%s | % s" % (title, noContent)
-		img 	= stringextract('<img src="', '"', grid)	# Bild vom 1. Beitrag
+		href_id  =  stringextract('href="/ard/player/', '/', grid) # Bild vom 1. Beitrag wie Higlights
+		item	= stringextract('Link:%s' %  href_id,  'idth}', page)
+		# Log('item: ' + item)
+		img =  stringextract('src":"', '{w', item)
+		img = img.replace('?w=', '')			# Endung .jpg?w={w
+		img = img.replace('{w', '')				# Endung /16x9/{w
+		if img.endswith('.jpg') == False:
+			img = img + '640.jpg'
+		# Log(img)
 		
 		ID 		= 'ARDStart'
 		if 'teaser live' in grid:						# eigenes Icon für Live-Beitrag 
