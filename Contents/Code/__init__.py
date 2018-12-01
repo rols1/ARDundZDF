@@ -20,8 +20,8 @@ import EPG
 
 # +++++ ARDundZDF - Plugin für den Plexmediaserver +++++
 
-VERSION =  '0.3.0'		 
-VDATE = '14.11.2018'
+VERSION =  '0.3.1'		 
+VDATE = '01.12.2018'
 
 # 
 #	
@@ -135,14 +135,15 @@ ICON_DIR_FAVORITS		= "Dir-favorits.png"
 
 
 
-BASE_URL 		= 'http://www.ardmediathek.de'
+# 01.12.2018 	Änderung der BASE_URL von www.ardmediathek.de zu classic.ardmediathek.de
+BASE_URL 		= 'https://classic.ardmediathek.de'
 BETA_BASE_URL	= 'https://beta.ardmediathek.de'
 ARD_VERPASST 	= '/tv/sendungVerpasst?tag='								# ergänzt mit 0, 1, 2 usw.
 ARD_AZ 			= 'https://beta.ardmediathek.de/ard/shows'					# ARDneu, komplett (#, A-Z)
 ARD_Suche 		= '/tv/suche?searchText=%s&words=and&source=tv&sort=date'	# Vorgabe UND-Verknüpfung
 ARD_Live 		= '/tv/live'
 
-# Aktualisierung der ARD-ID's in Update_ARD_Path
+
 ARD_RadioAll 	= 'http://www.ardmediathek.de/radio/live?genre=Alle+Genres&kanal=Alle'
 
 # ARD-Podcasts
@@ -819,16 +820,16 @@ def SendungenAZ_ARDnew(title, path, button):
 	if page == '':	
 		return 	ObjectContainer(header='Error', message=msg)						
 	PLog(len(page))
-	gridlist = blockextract('"shortTitle":', page)	# A-Z, 0-9
+	gridlist = blockextract('"mediumTitle":', page)	# A-Z, 0-9
 	PLog(len(gridlist))
 	
 	sendungen = []
 	cnt_item = 0
 	for grid in gridlist:			
-		shortTitle = stringextract('"shortTitle":', ',', grid)
-		shortTitle = shortTitle.replace('"', '').strip()
-		# PLog(shortTitle)
-		if shortTitle[0:1] == button:				# Match: Anfangbuchstabe mit Button
+		mediumTitle = stringextract('"mediumTitle":', ',', grid)
+		mediumTitle = mediumTitle.replace('"', '').strip()
+		# PLog(mediumTitle)
+		if mediumTitle[0:1] == button:				# Match: Anfangbuchstabe mit Button
 			cnt_item = cnt_item +1
 			# PLog('button: %s, cnt_item: %s' % (button,cnt_item))
 			sendungen.append(grid)
@@ -895,7 +896,7 @@ def ARDnew_Content(oc, Blocklist, CB, page):
 						
 	if CB == 'ARDnew_Sendungen':
 		for sendung in Blocklist:
-			headline = stringextract('shortTitle":', ',', sendung)
+			headline = stringextract('mediumTitle":', ',', sendung)
 			headline = headline.replace('"', '').strip()
 			headline = headline.decode(encoding="utf-8")
 			# img nur ähnlich wie in ARDStart (nicht gleich!)
@@ -1858,10 +1859,10 @@ def DownloadExtern(url, title, dest_path, key_detailtxt):  # Download mittels cu
 	oc = ObjectContainer(view_group="InfoList", title1='curl/wget-Download', art=ICON)
 	oc = home(cont=oc, ID=NAME)					# Home-Button	
 
-	summary = 'Download-Tools: Verschieben, Löschen, Ansehen, Verzeichnisse bearbeiten'	# wie in Main()
-	summary = summary.decode(encoding="utf-8", errors="ignore")
-	oc.add(DirectoryObject(key = Callback(DownloadsTools), title = 'Download-Tools', 
-		summary = summary, thumb = R(ICON_DOWNL_DIR)))		
+#	summary = 'Download-Tools: Verschieben, Löschen, Ansehen, Verzeichnisse bearbeiten'	# wie in Main()
+#	summary = summary.decode(encoding="utf-8", errors="ignore")
+#	oc.add(DirectoryObject(key = Callback(DownloadsTools), title = 'Download-Tools', 
+#		summary = summary, thumb = R(ICON_DOWNL_DIR)))		
 	
 	if 	Prefs['pref_generate_filenames']:				# Dateiname aus Titel generieren
 		dfname = make_filenames(title) 

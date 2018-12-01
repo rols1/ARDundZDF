@@ -281,7 +281,7 @@ def GetJsonByPath(path, jsonObject):
 # ----------------------------------------------------------------------			
 @route(PREFIX + '/ShowVideo')
 def ShowVideo(path, DictID):
-	Log('ShowVideo')
+	Log('ShowVideo:'); Log(path); Log(DictID)
 	
 	jsonObject = Dict[DictID]
 	videoObject = GetJsonByPath(path,jsonObject)
