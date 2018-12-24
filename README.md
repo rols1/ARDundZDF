@@ -13,7 +13,7 @@ Das Plugin löst die Vorgänger Plex-Plugin-ARDMediathek2015 und Plex-Plugin-ARD
 ab. Der Relaunch des ZDF-Mediathek-Internetangebots vom 28.10.2016 ist eingearbeitet. 
 
 #### Kodi-Version:
-Addon für Kodi / XBMC: https://github.com/rols1/Kodi-Addon-ARDundZDF, [Download](https://github.com/rols1/Kodi-Addon-ARDundZDF/releases/latest)
+Addon für Kodi / XBMC: [Quelle](https://github.com/rols1/Kodi-Addon-ARDundZDF), [Download](https://github.com/rols1/Kodi-Addon-ARDundZDF/releases/latest)
 
 #### Rückmeldungen willkommen:
 Im Forum: https://forums.plex.tv/t/rel-ardundzdf/309751
