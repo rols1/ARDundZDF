@@ -3,6 +3,14 @@ CHANGE HISTORY 	ARDundZDF - inoffizielles Plugin für den Plexmediaserver
 --------------		Nachfolger von Plex-Plugin-ARDMediathek2016
 --------------	
 
+	
+10.01.2019 	0.3.3	ZDF_get_content: Prüfung auf Einzelvideo auf Mehrfachseiten.
+			ZDF_get_content: Code für vorgezogene Bilderserien-Auswertung entfernt.
+			ARDnew_Content, img_via_id: Auswertung Sender (publicationService) ergänzt.
+			img_via_id: Rückgabe Info-Bild, falls leere Sender-ID übergeben wird.
+			ARDnew_Content: Übernahme Änderungen aus Kodi-Addon-ARDundZDF. 			
+08.12.2018 	0.3.2	Search: HTTP-Header 'User-Agent' + 'Accept' hinzugefügt (ohne Seiten unvollständig).
+			test_fault (ARD-spezif. Error-Test) entfernt - nicht mehr anwendbar.	
 01.12.2018 	0.3.1	Änderung der BASE_URL von www.ardmediathek.de zu classic.ardmediathek.de.
 			Extraktionsmerkmal geändert (shortTitle -> mediumTitle) in SendungenAZ_ARDnew und
 			ARDnew_Content.

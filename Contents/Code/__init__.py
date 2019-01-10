@@ -20,8 +20,8 @@ import EPG
 
 # +++++ ARDundZDF - Plugin für den Plexmediaserver +++++
 
-VERSION =  '0.3.1'		 
-VDATE = '01.12.2018'
+VERSION =  '0.3.3'		 
+VDATE = '10.01.2019'
 
 # 
 #	
@@ -507,7 +507,8 @@ def SearchUpdate(title):
 ####################################################################################################
 
 @route(PREFIX + '/ARDStart')	
-# Startseite der Mediathek - passend zum ausgewählten Sender.
+# Startseite der Mediathek - passend zum ausgewählten Sender -
+#		img_via_id gibt dann ein Info-Bild zurück.
 def ARDStart(title, sender): 
 	PLog('ARDStart:'); 
 	
@@ -530,7 +531,7 @@ def ARDStart(title, sender):
 		# 14.11.2018 Bild vom 1. Beitrag befindet sich im json-Abschnitt,
 		#	wird mittels href_id ermittelt:
 		href_id =  stringextract('/player/', '/', swiper) # Bild vom 1. Beitrag wie Higlights
-		img 	= img_via_id(href_id, page) 
+		img, sender = img_via_id(href_id, page) 
 					
 		oc.add(DirectoryObject(key=Callback(ARDStartRubrik, path=path, title=title, img=img,
 			ID='Swiper'), title=title,  thumb=img))
@@ -547,7 +548,7 @@ def ARDStart(title, sender):
 		if noContent:
 			title = "%s | % s" % (title, noContent)
 		href_id =  stringextract('/player/', '/', grid)
-		img 	= img_via_id(href_id, page) 	
+		img, sender = img_via_id(href_id, page) 		# Staffeln + Serien ohne player-Pfad, ohne Bild
 		
 		ID 		= 'ARDStart'
 		if 'teaser live' in grid:						# eigenes Icon für Live-Beitrag
@@ -567,15 +568,31 @@ def ARDStart(title, sender):
 	
 #---------------------------------------------------------------------------------------------------
 def img_via_id(href_id, page):
-	PLog("img_via_id:")
+	PLog("img_via_id: " + href_id)
+	if href_id == '':
+		img = R('icon-bild-fehlt.png')
+		return img, ''									# Fallback bei fehlender href_id
+		
 	item	= stringextract('Link:%s' %  href_id,  'idth}', page)
 	# PLog('item: ' + item)
-	img =  stringextract('src":"', '{w', item)
-	img = img.replace('?w=', '')			# Endung .jpg?w={w
-	img = img.replace('{w', '')				# Endung /16x9/{w
-	if img.endswith('.jpg') == False:
-		img = img + '640.jpg'
-	return img
+	
+	img = ''
+	if '16x9' in item:
+		img =  stringextract('src":"', '16x9', item)	# Endung ../16x9/{w.. oder  /16x9/
+	if '?w={w' in item:
+		img =  stringextract('src":"', '?', item)		# Endung ..16-9.jpg?w={w..
+		
+	if img == '':										# Fallback bei fehlendem Bild
+		img = R('icon-bild-fehlt.png')
+	else:
+		if img.endswith('.jpg') == False:
+			img = img + '16x9/640.jpg'		
+	
+	sender	= stringextract('%s.publicationService":{"name":"' %  href_id,  '"', page)
+	PLog('img: ' + img)	
+	PLog('sender: ' + sender)	
+	return img, sender
+	
 #---------------------------------------------------------------------------------------------------
 @route(PREFIX + '/ARDStartRubrik')	
 # Auflistung einer Rubrik aus ARDStart - title (ohne unescape) ist eindeutige Referenz 
@@ -612,7 +629,7 @@ def ARDStartRubrik(path, title, img, ID=''):
 		title	= unescape(title)
 		title 	= title.decode(encoding="utf-8")
 		href_id =  stringextract('/player/', '/', s) # Bild via id 
-		img 	= img_via_id(href_id, page) 	
+		img, sender = img_via_id(href_id, page) 
 			
 		duration= stringextract('duration">', '</div>', s)
 		if duration == '':
@@ -874,8 +891,10 @@ def ARDnew_Content(oc, Blocklist, CB, page):
 	if CB == 'ARDStartSingle':
 		for sendung in Blocklist:
 			href 		= BETA_BASE_URL + stringextract('href="', '"', sendung)
-			href_id =  stringextract('/player/', '/', sendung)# Bild via id 
-			img 	= img_via_id(href_id, page) 			
+			sid 		= href.split('/')[5]
+			img, sender	= img_via_id(sid, page)
+			tagline		= sender
+			
 			duration 	= stringextract('class="duration">', '</', sendung)
 			headline 	= stringextract('class="headline', '</', sendung)
 			headline	 = headline.replace('">', '')
@@ -892,29 +911,25 @@ def ARDnew_Content(oc, Blocklist, CB, page):
 				subline= ' '	# für PHT
 			PLog(href); PLog(img); PLog(headline); PLog(subline);
 			oc.add(DirectoryObject(key=Callback(ARDStartSingle, path=href, title=headline, 
-				duration=duration, ID='ARDnew_Content'), title=headline,  summary=duration, thumb=img))
+				duration=duration, ID='ARDnew_Content'), title=headline,  summary=duration, 
+				tagline=tagline, thumb=img))
 						
 	if CB == 'ARDnew_Sendungen':
 		for sendung in Blocklist:
 			headline = stringextract('mediumTitle":', ',', sendung)
 			headline = headline.replace('"', '').strip()
-			headline = headline.decode(encoding="utf-8")
-			# img nur ähnlich wie in ARDStart (nicht gleich!)
-			href_id  =  stringextract('$Teaser:', '.links', sendung) 	# Bild via id 
-			# PLog(href_id)
-			item	= stringextract('%s.images.aspect16x9"' %  href_id,  ',', page)
-			img  =  stringextract('src":"', '"', item)			
-			img	 	= (img.replace('"', '').replace('{width}', '640'))
-			img	 	= img.strip()
 			sid 	= stringextract('"id":"$Teaser:', '.', sendung)
+			img, sender	= img_via_id(sid, page)
+			tagline		= sender
+			
 			sname 	= (headline.replace('#', '').replace(' ', '-').replace('(', '').replace(')', '')
 				.replace(':', ' '))
 			sname	= transl_umlaute(sname)
-			href 	= 'https://beta.ardmediathek.de/ard/shows/%s/%s' % (sid, sname)
+			href 	= 'https://www.ardmediathek.de/ard/shows/%s/%s' % (sid, sname)
 			
 			PLog(href); PLog(img); PLog(headline); PLog(sid);		
 			oc.add(DirectoryObject(key=Callback(ARDnew_Sendungen, title=headline, path=href, 
-				img=img), title=headline, thumb=img))		
+				img=img), title=headline, thumb=img, tagline=tagline))		
 			
 	
 	return oc
@@ -1018,13 +1033,14 @@ def Search(query=None, title=L('Search'), channel='ARD', s_type=None, offset=0, 
 		path = path % query
 		ID=channel
 	PLog(path) 
-	page = HTTP.Request(path).content
+	headers={'User-Agent': "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36", \
+		'Accept': "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8"}
+	page = HTTP.Request(path, headers=headers).content
+					
+	if page == '':	
+		return 	ObjectContainer(header='Error', message=msg)						
 	PLog(len(page))
-	
-	err = test_fault(page, path)		# ARD-spezif. Error-Test
-	if err:
-		return ObjectContainer(header='Fehler', message=err)	
-		
+			
 	if page.find('<strong>keine Treffer</strong') >= 0:
 		msg_notfound = 'Leider kein Treffer.'
 		title = msg_notfound.decode(encoding="utf-8", errors="ignore")
@@ -1081,22 +1097,7 @@ def Search(query=None, title=L('Search'), channel='ARD', s_type=None, offset=0, 
 			oc = PageControl(title=name, path=path, cbKey=next_cbKey, mode='Suche', ID=ID) 	# wir springen direkt
 	 
 	return oc
- 
-#-----------------------
-def test_fault(page, path):	# testet geladene ARD-Seite auf ARD-spezif. Error-Test
-	PLog('test_fault')
-	
- 	error_txt = '<title>Leider liegt eine Störung vor | ARD Mediathek</title>'	
-	if page.find(error_txt) >= 0:
-		error_txt = 'Leider liegt eine Störung vor | ARD Mediathek | interne Serverprobleme'			 			 	 
-		msgH = 'Fehler'; msg = error_txt + ' | Seite: ' + path
-		PLog(msg)
-		msg =  msg.decode(encoding="utf-8", errors="ignore")
-		# return ObjectContainer(header=msgH, message=msg)		# muss Aufrufer erledigen
-		return error_txt
-	else:
-		return ''
-		
+ 		
 #-----------------------
 # 02.09.2018	erweitert um 2. Alternative mit urllib2.Request +  ssl.SSLContext
 #	Bei Bedarf get_page in EPG-Modul nachrüsten.
@@ -1250,9 +1251,6 @@ def PODMore(title, morepath, next_cbKey, ID, mode):
 					 
 	path = morepath
 	page = HTTP.Request(path).content
-	err = test_fault(page, path)			# ARD-spezif. Error-Test: 'Leider liegt eine..'
-	if err:
-		return ObjectContainer(header='Fehler', message=err)	
 							
 	pagenr_path =  re.findall("=page.(\d+)", page) # Mehrfachseiten?
 	PLog(pagenr_path)
@@ -3882,20 +3880,6 @@ def ZDF_get_content(oc, page, ref_path, offset=0, ID=None):
 		ID='DEFAULT'											# Sätze ohne aufnehmen														
 	
 	img_alt = teilstring(page, 'class=\"m-desktop', '</picture>') # Bildsätze für b-playerbox
-	title = ''
-	if page.find('class=\"content-box gallery-slider-box') >= 0: 	# Bildgalerie (hier aus Folgeseiten)
-		title = stringextract('\"big-headline\"  itemprop=\"name\" >', '</h1>', page)
-		title = unescape(title)
-		PLog(title)
-		oc = ZDF_Bildgalerie(oc=oc, page=page, mode='is_gallery', title=title)
-		page_cnt = len(oc)
-		return oc, offset, page_cnt 
-	if page.find('name headline mainEntityOfPage') >= 0:  # spez. Bildgalerie, hier Bares für Rares
-		headline = stringextract('name headline mainEntityOfPage\" >', '</h1>', page)
-		if headline[0:7] == 'Objekte':		# Bsp.: Objekte vom 6. Dezember 2016
-			oc = ZDF_Bildgalerie(oc=oc, page=page, mode='pics_in_accordion-panels', title=headline)
-			page_cnt = len(oc)
-			return oc, offset, page_cnt  		 	
 		
 	page_title = stringextract('<title>', '</title>', page)  # Seitentitel
 	page_title = page_title.strip()
@@ -3917,13 +3901,14 @@ def ZDF_get_content(oc, page, ref_path, offset=0, ID=None):
 	PLog('content_Blocks: ' + str(page_cnt));
 	
 	if page_cnt == 0:											# kein Ergebnis oder allg. Fehler
-		s = 'Es ist leider ein Fehler aufgetreten.'				# ZDF-Meldung Server-Problem
-		if page.find('\"title\">' + s) >= 0:
-			msg_notfound = s + ' Bitte versuchen Sie es später noch einmal.'
-		else:
-			msg_notfound = 'Leider keine Inhalte verfügbar.' 	# z.B. bei A-Z für best. Buchstaben 
-			if page_title:
-				msg_notfound = 'Leider keine Inhalte verfügbar zu: ' + page_title
+		if 'class="b-playerbox' not in page and 'class="item-caption' not in page: # Einzelvideo?
+			s = 'Es ist leider ein Fehler aufgetreten.'				# ZDF-Meldung Server-Problem
+			if page.find('\"title\">' + s) >= 0:
+				msg_notfound = s + ' Bitte versuchen Sie es später noch einmal.'
+			else:
+				msg_notfound = 'Leider keine Inhalte verfügbar.' 	# z.B. bei A-Z für best. Buchstaben 
+				if page_title:
+					msg_notfound = 'Leider keine Inhalte verfügbar zu: ' + page_title
 			
 		PLog('msg_notfound: ' + str(page_cnt))
 		# kann entfallen - Blockbildung mit class="content-box" inzw. möglich. Modul zdfneo.py entfernt.
@@ -3957,8 +3942,9 @@ def ZDF_get_content(oc, page, ref_path, offset=0, ID=None):
 		# PLog(rec)  # bei Bedarf
 			
 		if ID <> 'DEFAULT':					 			# DEFAULT: Übersichtsseite ohne Videos, Bsp. Sendungen A-Z
-			if 'title-icon icon-502_play' not in rec:  	# Videobeitrag?
-				continue		
+			if 'title-icon icon-502_play' not in rec:  	# Videobeitrag?  auch ohne Icon möglich
+				if '>Videolänge:<' not in rec : 
+					continue		
 		multi = False			# steuert Mehrfachergebnisse 
 		
 		meta_image = stringextract('<meta itemprop=\"image\"', '>', rec)
