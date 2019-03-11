@@ -2,8 +2,32 @@ CHANGE HISTORY 	ARDundZDF - inoffizielles Plugin für den Plexmediaserver
 --------------		Releases: https://github.com/rols1/ARDundZDF/releases/latest
 --------------		Nachfolger von Plex-Plugin-ARDMediathek2016
 --------------	
-
+			
 	
+11.03.2019	0.3.7	ARD Seite A-Z: neues Konzept für Scrollmechanismus, ähnlich aber nicht gleich wie
+			Startseite. 
+			Anpassung SendungenAZ: button für '#' -> '09', Pfad entfällt
+			Funktionen ARDnew_Sendungen + ARDnew_Sendungen entfernt (Abdeckung nun in ARDStartRubrik
+			und SendungenAZ_ARDnew.
+			SendungenAZ_ARDnew: Mehr-Steuerung + Begrenzung auf 20 Beiträge pro Seite (Timeoutvermeidung).
+			Menü ARD: Bilderserien entfernt (seit Ende 2018 nicht mehr bei ARD verfügbar).
+			Search:	Code für Bilderserien entfernt.
+				
+not on github	0.3.6	Aktualisierung livesenderTV.xml (aktuelle Kodi-Version).
+			get_playlist_img: lower() für Vergleichspaare (Sender-Icons), Reihenfolge geändert,
+			skip Leereintrag in livesenderTV.xml.
+			get_page: Erweiterung "skip HTTP.Request" und Auswertung komprimierter Inhalte.
+			
+not on github	0.3.5	ARD Startseite: neues Konzept für Scrollmechanismus - Ersatz für horizontales +	
+			vertikales Scrolling.	
+			ARD Startseite - Anpassung Funktionen: ARDStart, ARDStartRubrik, ARDStartSingle,
+			ARDStartVideoMP4, ARDStartVideoStreams.
+			ARD Startseite: Funktionen scrollpage entfernt
+			
+not on github	0.3.4	ARD Startseite - Anpassung an neuen Scrollmechanismus: neue Funktion get_scrollpage.
+			ARDStart: Blockbildung Rubriken angepasst ('class="gridlist"' -> '| widgetID').	
+			ARDStartSingle: Url für Livesender angepasst.
+			Cache für Startseite eingeführt	
 10.01.2019 	0.3.3	ZDF_get_content: Prüfung auf Einzelvideo auf Mehrfachseiten.
 			ZDF_get_content: Code für vorgezogene Bilderserien-Auswertung entfernt.
 			ARDnew_Content, img_via_id: Auswertung Sender (publicationService) ergänzt.

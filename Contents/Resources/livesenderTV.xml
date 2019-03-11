@@ -4,9 +4,10 @@
   <genre>TV</genre>
   <description>Livestreams http://www.ardmediathek.de/tv/live</description>
   <thumbnail></thumbnail>
-   <date>19.09.2018 rols1</date>
+   <date>09.03.2019 rols1</date>
   <credits>Grafiken @Arauco (Plex-Forum)</credits>
   <info>Senderübersicht TVToday: https://www.tvtoday.de/programm/standard/sender/ view:Alle Sender</info>
+  <info2>hrefsender enthält Sendernamen aus beta.ardmediathek.de</info2>
  </channels_info>
  
 <channel>
@@ -16,8 +17,8 @@
 <items>
 	<item>
 		<title>Das Erste</title>
+		<hrefsender>Das Erste</hrefsender>
 		<link>https://daserstehdde-lh.akamaihd.net/i/daserstehd_de@629196/master.m3u8</link>
-		<hrefsender>das-erste</hrefsender>
 		<thumbnail>tv-das-erste.png</thumbnail>
 		<genre>TV</genre>
 		<EPG_ID>ARD</EPG_ID>
@@ -26,6 +27,7 @@
 	</item>
 	<item>
 		<title>ZDF</title>
+		<hrefsender>ZDF</hrefsender>
 		<link>http://zdf1314-lh.akamaihd.net/i/de14_v1@392878/master.m3u8</link>
 		<thumbnail>tv-zdf.png</thumbnail>
 		<genre>TV</genre>
@@ -36,8 +38,8 @@
 	</item>
 	<item>
 		<title>KiKA</title>
+		<hrefsender>KiKA</hrefsender>
 		<link>https://kikade-lh.akamaihd.net/i/livetvkika_de@450035/master.m3u8</link>
-		<hrefsender>kika</hrefsender>
 		<thumbnail>tv-kika.png</thumbnail>
 		<genre>TV</genre>
 		<EPG_ID>KIKA</EPG_ID>
@@ -46,11 +48,11 @@
 		<geoblock>ja</geoblock>
 	</item>
 	<item>
-		<title>Arte deutsch</title>
+		<title>Arte</title>
+		<hrefsender>ARTE</hrefsender>
 		<link>https://artelive-lh.akamaihd.net/i/artelive_de@393591/master.m3u8</link>
 		<link1>LiveTV_Arte.m3u8</link1>link1>
 		<info>Web: http://www.ardmediathek.de/tv/live?kanal=5880</info>
-		<hrefsender>arte</hrefsender>
 		<thumbnail>tv-arte.png</thumbnail>
 		<genre>TV</genre>
 		<EPG_ID>ARTE</EPG_ID>
@@ -60,8 +62,8 @@
 	</item>
 	<item>
 		<title>ONE</title>
+		<hrefsender>ONE</hrefsender>
 		<link>http://onelivestream-lh.akamaihd.net/i/one_livestream@568814/master.m3u8</link>
-		<hrefsender>one</hrefsender>
 		<thumbnail>tv-one.png</thumbnail>
 		<genre>TV</genre>
 		<EPG_ID>fes</EPG_ID>
@@ -70,8 +72,8 @@
 	</item>
 	<item>
 		<title>3sat</title>
-		<link>http://zdf0910-lh.akamaihd.net/i/dach10_v1@392872/master.m3u8</link>
 		<hrefsender>3sat</hrefsender>
+		<link>http://zdf0910-lh.akamaihd.net/i/dach10_v1@392872/master.m3u8</link>
 		<thumbnail>tv-3sat.png</thumbnail>
 		<genre>TV</genre>
 		<EPG_ID>3SAT</EPG_ID>
@@ -81,6 +83,7 @@
 	</item>
 	<item>			
 		<title>ZDFneo</title>
+		<hrefsender>ZDFneo</hrefsender>
 		<link>http://zdf1314-lh.akamaihd.net/i/de13_v1@392877/master.m3u8</link>
 		<thumbnail>tv-zdf-neo.png</thumbnail>
 		<genre>TV</genre>
@@ -91,6 +94,7 @@
 	</item>
 	<item>			
 		<title>ZDFinfo</title>
+		<hrefsender>ZDFinfo</hrefsender>
 		<link>http://zdf1112-lh.akamaihd.net/i/de12_v1@392882/master.m3u8</link>
 		<thumbnail>tv-zdf-info.png</thumbnail>
 		<genre>TV</genre>
@@ -101,8 +105,8 @@
 	</item>
 	<item>
 		<title>ARD-alpha</title>
+		<hrefsender>ARD-alpha</hrefsender>
 		<link>https://brlive-lh.akamaihd.net/i/bralpha_germany@119899/master.m3u8</link>
-		<hrefsender>ard-alpha</hrefsender>
 		<thumbnail>tv-alpha.png</thumbnail>
 		<genre>TV</genre>
 		<EPG_ID>ALPHA</EPG_ID>
@@ -111,8 +115,8 @@
 	</item>
 	<item>
 		<title>phoenix</title>
-		<link>http://zdf0910-lh.akamaihd.net/i/de09_v1@392871/master.m3u8</link>
 		<hrefsender>phoenix</hrefsender>
+		<link>http://zdf0910-lh.akamaihd.net/i/de09_v1@392871/master.m3u8</link>
 		<thumbnail>tv-phoenix.png</thumbnail>
 		<genre>TV</genre>
 		<EPG_ID>PHOEN</EPG_ID>
@@ -122,8 +126,8 @@
 	</item>
 	<item>
 		<title>Tagesschau24-Livestream</title>
-		<link>http://tagesschau-lh.akamaihd.net/i/tagesschau_1@119231/master.m3u8</link>
 		<hrefsender>tagesschau24</hrefsender>
+		<link>http://tagesschau-lh.akamaihd.net/i/tagesschau_1@119231/master.m3u8</link>
 		<thumbnail>tv-tagesschau.png</thumbnail>
 		<genre>TV</genre>
 		<EPG_ID>TAG24</EPG_ID>
@@ -132,6 +136,7 @@
 	</item>
 	<item>
 		<title>Deutsche Welle</title>
+		<hrefsender>Deutsche Welle</hrefsender>
 		<link>http://dwstream6-lh.akamaihd.net/i/dwstream6_live@124409/master.m3u8</link>
 		<thumbnail>tv-deutsche-welle.png</thumbnail>
 		<genre>TV</genre>
@@ -149,18 +154,18 @@
 <items>
 	<item>
 		<title>BR Fernsehen-Nord</title>
+		<hrefsender>BR Fernsehen</hrefsender>
 		<link>http://brlive-lh.akamaihd.net/i/bfsnord_germany@119898/master.m3u8</link>
-		<hrefsender>br-fernsehen-nord</hrefsender>
 		<thumbnail>tv-br.png</thumbnail>
 		<genre>TV</genre>
 		<EPG_ID>BR</EPG_ID>
-		<date>21.09.2018</date>
+		<date>09.03.2019</date>
 		<epg_url></epg_url>
 	</item>
 	<item>
 		<title>BR Fernsehen-Süd</title>
+		<hrefsender>BR Fernsehen Süd</hrefsender>
 		<link>https://brlive-lh.akamaihd.net/i/bfssued_germany@119890/master.m3u8</link>
-		<hrefsender>br-fernsehen-sued</hrefsender>
 		<thumbnail>tv-br.png</thumbnail>
 		<genre>TV</genre>
 		<EPG_ID>BR</EPG_ID>
@@ -169,8 +174,8 @@
 	</item>
 	<item>
 		<title>hr-fernsehen</title>
-		<link>https://hrlive1-lh.akamaihd.net/i/hr_fernsehen@75910/master.m3u8</link>		  
 		<hrefsender>hr-fernsehen</hrefsender>
+		<link>https://hrlive1-lh.akamaihd.net/i/hr_fernsehen@75910/master.m3u8</link>		  
 		<thumbnail>tv-hr.png</thumbnail>
 		<genre>TV</genre>
 		<EPG_ID>HR</EPG_ID>
@@ -179,8 +184,8 @@
 	</item>
 	<item>
 		<title>MDR Sachsen</title>
+		<hrefsender>MDR</hrefsender>
 		<link>https://mdrsnhls-lh.akamaihd.net/i/livetvmdrsachsen_de@513998/master.m3u8</link>
-		<hrefsender>mdr-sachsen</hrefsender>
 		<thumbnail>tv-mdr-sachsen.png</thumbnail>
 		<genre>TV</genre>
 		<EPG_ID>MDR</EPG_ID>
@@ -189,8 +194,8 @@
 	</item>
 	<item>
 		<title>Radio Bremen</title>
+		<hrefsender>Radio Bremen</hrefsender>
 		<link>https://rbfs-lh.akamaihd.net/i/rb_fs@438960/master.m3u8</link>
-		<hrefsender>radio-bremen</hrefsender>
 		<thumbnail>tv-bremen.png</thumbnail>
 		<genre>TV</genre>
 		<EPG_ID>N3</EPG_ID>
@@ -199,8 +204,8 @@
 	</item>
 	<item>
 		<title>NDR Niedersachsen</title>
+		<hrefsender>NDR</hrefsender>
 		<link>https://ndrfs-lh.akamaihd.net/i/ndrfs_nds@430233/master.m3u8</link>
-		<hrefsender>ndr-niedersachsen</hrefsender>
 		<thumbnail>tv-ndr-niedersachsen.png</thumbnail>
 		<genre>TV</genre>
 		<EPG_ID>N3</EPG_ID>
@@ -209,8 +214,8 @@
 	</item>
 	<item>
 		<title>NDR Schleswig-Holstein</title>
+		<hrefsender>NDR</hrefsender>
 		<link>https://ndrfs-lh.akamaihd.net/i/ndrfs_sh@430234/master.m3u8</link>
-		<hrefsender>ndr-schleswig-holstein</hrefsender>
 		<thumbnail>tv-ndr-schleswig-holstein.png</thumbnail>
 		<genre>TV</genre>
 		<EPG_ID>N3</EPG_ID>
@@ -219,8 +224,8 @@
 	</item>
 	<item>
 		<title>NDR Mecklenburg-Vorpommern</title>
+		<hrefsender>NDR</hrefsender>
 		<link>https://ndrfs-lh.akamaihd.net/i/ndrfs_mv@430232/master.m3u8</link>
-		<hrefsender>ndr-mecklenburg-vorpommern</hrefsender>
 		<thumbnail>tv-ndr-mecklenburg-vorpommern.png</thumbnail>
 		<genre>TV</genre>
 		<EPG_ID>N3</EPG_ID>
@@ -229,8 +234,8 @@
 	</item>
 	<item>
 		<title>NDR Hamburg</title>
+		<hrefsender>NDR</hrefsender>
 		<link>https://ndrfs-lh.akamaihd.net/i/ndrfs_hh@430231/master.m3u8</link>
-		<hrefsender>ndr-hamburg</hrefsender>
 		<thumbnail>tv-ndr-hamburg.png</thumbnail>
 		<genre>TV</genre>
 		<EPG_ID>N3</EPG_ID>
@@ -239,8 +244,8 @@
 	</item>
 	<item>
 		<title>rbb Fernsehen Brandenburg</title>
+		<hrefsender>rbb</hrefsender>
 		<link>https://rbblive-lh.akamaihd.net/i/rbb_brandenburg@349369/master.m3u8</link>
-		<hrefsender>rbb-fernsehen-brandenburg</hrefsender>
 		<thumbnail>tv-rbb-brandenburg.png</thumbnail>
 		<genre>TV</genre>
 		<EPG_ID>RBB</EPG_ID>
@@ -249,8 +254,8 @@
 	</item>
 	<item>
 		<title>SR Fernsehen</title>
+		<hrefsender>SR</hrefsender>
 		<link>https://srlive24-lh.akamaihd.net/i/sr_universal02@107595/master.m3u8</link>
-		<hrefsender>sr-fernsehen</hrefsender>
 		<thumbnail>tv-sr.png</thumbnail>
 		<genre>TV</genre>
 		<EPG_ID>SWR</EPG_ID>
@@ -261,19 +266,19 @@
 	</item>
 	<item>
 		<title>SWR Fernsehen Baden-Württemberg</title>
+		<hrefsender>SWR</hrefsender>
 		<link>https://swrbw-lh.akamaihd.net/i/swrbw_live@196738/master.m3u8</link>
-		<hrefsender>swr-baden-wuerttemberg</hrefsender>
 		<thumbnail>tv-swr.png</thumbnail>
 		<genre>TV</genre>
 		<EPG_ID>SWR</EPG_ID>
 		<date>07.09.2018</date>
 		<epg_url></epg_url>
-		<info>TVToday: SWR/SR gemeinsam</info>
+		<info>TVToday: SWR/SR gemeinsam</info>https://58de7a369a9c4.streamlock.net/aktionaertv_live/smil:aktionaertv_live_abr.smil/playlist.m3u8
 	</item>
 	<item>
 		<title>WDR Fernsehen im Livestream</title>
+		<hrefsender>WDR</hrefsender>
 		<link>https://wdrfsgeo-lh.akamaihd.net/i/wdrfs_geogeblockt@530016/master.m3u8</link>
-		<hrefsender>wdr-fernsehen</hrefsender>
 		<thumbnail>tv-wdr.png</thumbnail>
 		<genre>TV</genre>
 		<EPG_ID>WDR</EPG_ID>
@@ -298,11 +303,11 @@
 	</item>
 	<item>
 		<title>DAF</title>
-		<link>rtmp://fms.daf.tmt.de/live/flv:dafstream100</link>
+		<link>https://58de7a369a9c4.streamlock.net/aktionaertv_live/smil:aktionaertv_live_abr.smil/playlist.m3u8</link>
 		<thumbnail>tv-daf.png</thumbnail>
 		<genre>TV</genre>
 		<EPG_ID></EPG_ID>
-		<date>25.02.2015</date>
+		<date>12.10.2018</date>
 	</item>
 	<item>
 		<title>Welt / N24-Live</title>
@@ -310,16 +315,16 @@
 		<thumbnail>tv-n24.png</thumbnail>
 		<genre>TV</genre>
 		<EPG_ID>WELT</EPG_ID>
-		<date>30.01.2018</date>
+		<date>12.10.2018</date>
 	</item>
-	<item>
+	<item-out>
 		<title>n-tv</title>
 		<link>LiveTV_ntv.m3u8</link>
 		<thumbnail>tv-ntv.png</thumbnail>
 		<genre>TV</genre>
 		<EPG_ID>NTV</EPG_ID>
-		<date>11.03.2017</date>
-	</item>
+		<date>12.10.2018 - verschlüsselt, nicht mehr verfügbar</date>
+	</item-out>
 	<item>
 		<title>QVC</title>
 		<link>http://live.qvcde.simplestreamcdn.com/live/qvcde_main_clean/bitrate1.isml/live.m3u8</link>
