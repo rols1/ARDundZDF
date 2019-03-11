@@ -27,7 +27,7 @@ not on github	0.3.5	ARD Startseite: neues Konzept für Scrollmechanismus - Ersat
 not on github	0.3.4	ARD Startseite - Anpassung an neuen Scrollmechanismus: neue Funktion get_scrollpage.
 			ARDStart: Blockbildung Rubriken angepasst ('class="gridlist"' -> '| widgetID').	
 			ARDStartSingle: Url für Livesender angepasst.
-			Cache für Startseite eingeführt	
+			
 10.01.2019 	0.3.3	ZDF_get_content: Prüfung auf Einzelvideo auf Mehrfachseiten.
 			ZDF_get_content: Code für vorgezogene Bilderserien-Auswertung entfernt.
 			ARDnew_Content, img_via_id: Auswertung Sender (publicationService) ergänzt.
