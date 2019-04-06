@@ -2,7 +2,31 @@ CHANGE HISTORY 	ARDundZDF - inoffizielles Plugin für den Plexmediaserver
 --------------		Releases: https://github.com/rols1/ARDundZDF/releases/latest
 --------------		Nachfolger von Plex-Plugin-ARDMediathek2016
 --------------	
+	
+06.04.2019	0.4.2	SendungenAZ: Laden der A-Z-Leitseite für gewählten Sender via api-Call, 
+			Ermittlung und Kennzeichnung der beitraglosen Buttons.
+			SendungenAZ: Umstellung Podcast / ARD-Inhalte
+			SendungenAZ: Erstellen der Buttons für SendungenAZ_ARDnew.
+			SendungenAZ: Aktualisierung der Doku im Funktionsbereich.
+			SendungenAZ_ARDnew: Aktualisierung der Doku im Funktionskopf.
 			
+not on github	0.4.1	SendungenAZ_ARDnew: Fallback, falls Buttonseite leer (Doku s. Funktionskopf).     
+			SendungenAZ, SendungenAZ_ARDnew: cTimeout=0 für get_page (Cache aus).
+			ARDStartRubrik: Kennz. Rubriken aus A-Z-Seiten + Button-rel. Titel der 
+			Sendereihe holen
+			
+not on github	0.4.0	Neue Funktion get_api_call: Zusammensetzung des API-Calls für A-Z-Seiten.
+			
+not on github	0.3.9	SendungenAZ_ARDnew:Integration aller sha256Hashes für die Buttons der
+			A-Z-Seiten "Alle".
+			SendungenAZ_ARDnew: Laden der gewählten Seite via api-Call (wie SendungenAZ),
+			Erstellen der Buttons für ARDStartRubrik.
+	
+not on github	0.3.8	A-Z Podcasts (SinglePage): leere Inhalte abgefangen (Bsp. X,Y).
+			ARDnew_Sendungen gelöscht - Funktion in ARDStartRubrik enthalten.
+			ARDStartRubrik: Kennzeichnung von A-Z-Seiten für Blockbildung.
+			ARDStart: Anzeige der Beiträge entfernt (Param. pageSize stimmt nicht mit tats. 
+			Anzahl überein). Ersatz: Wiederholung des Titels in summary.						
 	
 11.03.2019	0.3.7	ARD Seite A-Z: neues Konzept für Scrollmechanismus, ähnlich aber nicht gleich wie
 			Startseite. 
@@ -27,7 +51,7 @@ not on github	0.3.5	ARD Startseite: neues Konzept für Scrollmechanismus - Ersat
 not on github	0.3.4	ARD Startseite - Anpassung an neuen Scrollmechanismus: neue Funktion get_scrollpage.
 			ARDStart: Blockbildung Rubriken angepasst ('class="gridlist"' -> '| widgetID').	
 			ARDStartSingle: Url für Livesender angepasst.
-			
+		
 10.01.2019 	0.3.3	ZDF_get_content: Prüfung auf Einzelvideo auf Mehrfachseiten.
 			ZDF_get_content: Code für vorgezogene Bilderserien-Auswertung entfernt.
 			ARDnew_Content, img_via_id: Auswertung Sender (publicationService) ergänzt.

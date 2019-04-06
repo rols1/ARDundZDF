@@ -13,6 +13,9 @@ import time
 import datetime
 import json				# json -> Textstrings
 import locale
+from StringIO import StringIO 	# s. get_page
+import gzip, zipfile			# dto.
+
 
 import updater
 import EPG
@@ -20,8 +23,8 @@ import EPG
 
 # +++++ ARDundZDF - Plugin für den Plexmediaserver +++++
 
-VERSION =  '0.3.7'		 
-VDATE = '11.03.2019'
+VERSION =  '0.4.2'		 
+VDATE = '06.04.2019'
 
 # 
 #	
@@ -514,9 +517,11 @@ def SearchUpdate(title):
 # Startseite der Mediathek - passend zum ausgewählten Sender -
 #		Hier wird die HTML-Seite geladen. Sie enthält Highlights + die ersten beiden Rubriken. 
 #		Der untere json-Abschnitt enthält die WidgetID's mit Links zu den restlichen Rubriken
-#		(nur Titel, ohne Bild, ohne Beschreibung).
+#		(nur Titel, ohne Bild, ohne Beschreibung) - diese werden erst beim Scrolling geladen.
 #		Verarbeitung der Links zu den restlichen Rubriken in ARDStartRubrik. 	
 #	
+#		Um horizontales Scrolling (Nachladen innerhalb einer Rubrik) zu vermeiden, fordern
+#			wir via pageSize am path-Ende alle verfügbaren Beiträge an.
 def ARDStart(title, sender, widgetID=''): 
 	PLog('ARDStart:'); 
 	
@@ -534,17 +539,20 @@ def ARDStart(title, sender, widgetID=''):
 	if page == '':	
 		return 	ObjectContainer(header='Error', message=msg)						
 	PLog(len(page))
-										
-	if 'class="swiper-stage"' in page:						# Higlights im Wischermodus
-		swiper 	= stringextract('class="swiper-stage"', 'gridlist', page)
+	
+	# möglich: 	swiper-stage, swiper-container, swiper-wrapper, swiper-slide								
+	if 'class="swiper-' in page:						# Higlights im Wischermodus
+		swiper 	= stringextract('class="swiper-', 'gridlist', page)
 		title 	= 'Higlights'
 		# 14.11.2018 Bild vom 1. Beitrag befindet sich im json-Abschnitt,
 		#	wird mittels href_id ermittelt:
 		href_id =  stringextract('/player/', '/', swiper) # Bild vom 1. Beitrag wie Higlights
-		img, sender = img_via_id(href_id, page) 
+		img, sender = img_via_id(href_id, page)
+		summ = 'Higlights' 
+		
 					
 		oc.add(DirectoryObject(key=Callback(ARDStartRubrik, path=path, title=title, widgetID='',
-			ID='Swiper'), title=title,  thumb=img))
+			ID='Swiper'), title=title,  summary=summ, thumb=img))
 								
 
 	widget_range= stringextract('APOLLO_STATE__', '"tracking"', page)	# Bereich WidgetID's ausschneiden 
@@ -560,7 +568,9 @@ def ARDStart(title, sender, widgetID=''):
 		title 	= title.decode(encoding="utf-8")
 		
 		pageSize 	= stringextract('"pageSize":', ',', item)
-		summ 	= "Beiträge: %s".decode(encoding="utf-8") % pageSize
+		# pageSize stimmt nicht mit tats. Anzahl überein! Wir wiederholen statdessen den Titel, um
+		#	im Webplayer die Ansicht Details zu erzwingen.
+		# summ 	= "Beiträge: %s".decode(encoding="utf-8") % pageSize 
 		widgetID = "%s|%s" % (wid, pageSize)
 		offset = "pageNumber=0&pageSize=%s" % pageSize				# Verzicht auf horiz. Scrolling - alle zeigen
 		path = 'http://page.ardmediathek.de/page-gateway/widgets/ard/editorials/%s?%s' % (wid, offset)
@@ -574,7 +584,7 @@ def ARDStart(title, sender, widgetID=''):
 		PLog('Satz:');
 		PLog(title); PLog(widgetID); PLog(img); PLog(path)
 		oc.add(DirectoryObject(key=Callback(ARDStartRubrik, path=path, title=title, 
-			widgetID=widgetID, ID=ID), title=title, summary=summ, thumb=img))
+			widgetID=widgetID, ID=ID), title=title, summary=title, thumb=img))
 
 	PLog(len(oc))
 	return oc
@@ -614,12 +624,13 @@ def img_via_id(href_id, page):
 #		zur json-Seite der gewählten Rubrik (früherer Abgleich html-Titel / json-Titel entfällt).
 #		Die json-Seite kann Verweise zu weiteren Rubriken enthalten, z.B. bei Staffeln / Serien - Trigger hier
 #			 mehrfach=True
+# A-Z-Seiten werden in SendungenAZ_ARDnew vorbehandelt, die gefundenen Rubriken dannn hier. 
 #		
 #		Verzicht auf Vertikales Scrolling: wir laden den kompl. Inhalt - die Anzahl der Beiträge entnehmen
 #		wir der Variablen pageSize (stimmt leider nicht mit der tats. Anzahl überein, ist immer größer).
 
 def ARDStartRubrik(path, title, widgetID='', ID=''): 
-	PLog('ARDStartRubrik: %s' % ID);
+	PLog('ARDStartRubrik: %s' % ID); PLog(title); PLog(path)	
 	title 		= title.decode(encoding="utf-8")
 			
 	sendername, sender, kanal, img = Dict['ARDSender'].split(':')
@@ -647,7 +658,7 @@ def ARDStartRubrik(path, title, widgetID='', ID=''):
 			title	= unescape(title)
 			title 	= title.decode(encoding="utf-8")
 			href_id =  stringextract('/player/', '/', s) # Bild via id 
-			img, sender = img_via_id(href_id, page) 
+			img, sender = img_via_id(href_id, page)
 				
 			duration= stringextract('duration">', '</div>', s)
 			if duration == '':
@@ -663,12 +674,12 @@ def ARDStartRubrik(path, title, widgetID='', ID=''):
 		gridlist = blockextract('"broadcastedOn"', page)
 	else:
 		# die Seiten mit Videolinks (availableTo) können zusätzl. Beiträge enthalten
-		#	('"images":') - z.Z. nicht berücksichtigt. Falls docj geplant, müssten sie
+		#	('"images":') - z.Z. nicht berücksichtigt. Falls doch geplant, müssten sie
 		#	unterhalb der Buttons Streaming-Formate +  MP4-Formate gelistet werden.
 		#	Bsp.: BR/Serienhighlights (jew. 1 Video, mehrere Beitrag-Links).
 		gridlist = blockextract('"availableTo"', page)		# Sendungen, json-key "teasers"	
 	if len(gridlist) == 0:	
-		gridlist = blockextract( '"images":', page) # weitere Rubriken?
+		gridlist = blockextract( '"images":', page) # weitere Rubriken?				
 		if len(gridlist) > 0:
 			mehrfach = True
 			PLog('weitere Rubriken')		
@@ -676,10 +687,12 @@ def ARDStartRubrik(path, title, widgetID='', ID=''):
 	if len(gridlist) == 0:				
 		msg = 'keine Beiträge zu %s gefunden.'.decode(encoding="utf-8")  % title
 		PLog(msg)
-		return 	ObjectContainer(header='Error', message=msg)
-		
-	PLog('gridlist: ' + str(len(gridlist)))				# gewählte Rubrik suchen - entf.
+		return 	ObjectContainer(header='Error', message=msg)	
+	PLog('gridlist: ' + str(len(gridlist)))	
 	
+	if ID == 'A-Z':											# Button-rel. Titel Sendereihe holen
+		title_pre = stringextract('"title":"', '"', page)
+		
 	for s  in gridlist:
 		targetID= stringextract('target":{"id":"', '"', s)	 	# targetID
 		PLog(targetID)
@@ -688,10 +701,15 @@ def ARDStartRubrik(path, title, widgetID='', ID=''):
 		href 	= 'https://www.ardmediathek.de/%s/live/%s' % (sender, targetID)
 		
 		if mehrfach == True:									# targetID von grouping-Url 
-			targetID= stringextract('/ard/grouping/', '"', s)	 	# 
+			groupingID= stringextract('/ard/grouping/', '"', s)	# leer bei Beiträgen von A-Z-Seiten
+			if groupingID != '':
+				targetID = groupingID
 			href = 'http://page.ardmediathek.de/page-gateway/pages/%s/grouping/%s'  % (sender, targetID)
-
-		title 	= stringextract('"longTitle":"', '"', s)
+		
+		if ID == 'A-Z' and title_pre:							# Button-relevanter Titel
+			title 	= title_pre + ' | ' + stringextract('"title":"', '"', s)
+		else:
+			title 	= stringextract('"longTitle":"', '"', s)
 		if title == '':
 			title 	= stringextract('"title":"', '"', s)
 		title 	= title.replace('- Standbild', '')	
@@ -710,6 +728,14 @@ def ARDStartRubrik(path, title, widgetID='', ID=''):
 		PLog('maturitytRating: ' + maturitytRating)				# außerhalb Block!
 		if 	maturitytRating:
 			duration = "%s | %s" % (duration, maturitytRating)	
+			
+		pubServ = stringextract('"name":"', '"', s)		# publicationService (Sender)
+		if pubServ:
+			if duration:
+				duration = "%s | Sender: %s" % (duration, pubServ)
+			else:
+				duration = "Sender: %s" % (pubServ)
+		
 
 		if	ID == 'Livestream':
 			targetID= stringextract('/pages/ard/item/', '"', s)		# targetID
@@ -938,121 +964,151 @@ def ARDStartVideoMP4(title, path, summ, img, geoblock):
 	
 ####################################################################################################
 @route(PREFIX + '/SendungenAZ_ARDnew')	
-# Auflistung der A-Z-Buttons bereits in SendungenAZ
+# Auflistung der A-Z-Buttons bereits in SendungenAZ einschl. Kennz. "Keine Inhalte".
 # Hinweise zu Änderungen durch die ARD (Scroll-Mechanismus) s. SendungenAZ.
-# Hier sind die ID's zu den Sendungblöcken zwischen den show_mark's gelistet - s.u.
-# Segmente + Links identisch mit json-Segmenten aus ARDStart / ARDStartRubrik 
-# Wir laden zu jedem Link die json-Datei und erstellen Buttons mit dem Kopfwerten. 
-#	Callback ist ARDStartRubrik.
 #
-# Mehr-Button: da teilweise 50-100 Beiträge pro Buchstabe existieren, begrenzen wir das
-#	Listing auf 20 Beiträge. So verhindern wir den Timeout in Plex nach ca. 15sec, wenn die
-#	Beiträge nicht komplett geladen werden können.
-# 
-def SendungenAZ_ARDnew(title, button, offset=0): 
+# 04.04.2019 die vorherigen Mehr-Buttons entfallen - die einz. Beiträge brauchen
+#	nicht mehr geladen zu werden. Statt dessen laden wir via api-Call die relevante
+#	json-Seite für den gewählten Button (alle Sender) und filtern die Beiträge 
+#	des aktuell gewählten Senders).
+#	Die Hashes für den api-Call wurden via Chrome-Dev.-Tools ermittelt. Die hier
+#	verwendeten gelten für den Senderbereich "Alle", für die einzelnen Sender 
+#	existieren eigene Hashes, zusätzl. ein Hashwert für die A-Z-Leitseite, die 
+#	in SendungenAZ für die Kennz. "Keine Inhalte" verwendet wird.
+#	
+#	Weiterverarbeitung in ARDStartRubrik.
+#	Fallback - betrifft aktuell (06.04.2019) nur Button W (dto. Webseite):
+#	Bei Fehlschlag (Sever-Error, leere Seite) laden wir die A-Z-Leitseite aus SendungenAZ
+#	(url_api) und erstellen Buttons für die Beiträge zu den dort gelisteten grouping-Links.
+#
+# 	Merkmal A-Z-Seite: 'glossary":{"shows09' in page (ohne  pagination wie in ARDStartRubrik).
+#
+#		
+
+def SendungenAZ_ARDnew(title, button, api_call): 
 	PLog('SendungenAZ_ARDnew:')
 	PLog('button: ' + button); 
-	offset = int(offset)
-	
-	title = title.decode(encoding="utf-8")		
-	oc = ObjectContainer(view_group="InfoList", title2=title, art=ObjectContainer.art, no_cache=True)
-	oc = home(cont=oc, ID='ARD')							# Home-Button
+	title = title.decode(encoding="utf-8")	
+	title_org = title
+	url_api_org	= api_call	# speichern für Fehlschlag
 		
-	sendername, sender, kanal, img = Dict['ARDSender'].split(':')
-	PLog(sender)	
-	path = ARD_AZ % sender
-	page, msg = get_page(path)	
-	if page == '':	
-		return 	ObjectContainer(header='Error', message=msg)						
-	PLog(len(page))
-	page = page.split('__APOLLO_STATE__')[1]		# json-Bereich abschneiden
-	show_mark 	= '"shows%s"' % button
-	gridlist = blockextract(show_mark, page)		# 1 Block
+	sha256Hashes_AZ = [									# dauerhafte Gültigkeit prüfen
+					"09	56604d4f195e7eb318227fa01cdc424d5378d11b583d85c696d971ae19be2cf9",
+					"A	3bfe84dc9887d0991263fb19dc4c5ba501bb5f27db0a06074b9b0e9ecf2c3c27",
+					"B	557b3d0694f7d8d589e43c504a980f4090a025b8c2eefa6559b245f2f1a69e16",
+					"C	4a35671fa57762f7e94a2aa79dc48f7fa9dde7c25387ecf9b722d37b26cc2d95",
+					"D	f942fa0fe653a179d07349a907687544b090751deabe848919fc10949b3e05c6",
+					"E	b7c5db273782bed01ae8ed000d7b5c7b6fdacad30b2d88690b1819c131439a61",
+					"F	3fc33abce9a66d020a172a15268354acc4139652c4211be02f95ed470fc34962",
+					"G	0ea25f94b3f8f4978bd55189392ed6a1874fe66c846a92734a50d3de37e4dad9",
+					"H	fa55e3e6db3952d3cfb5a59fbfe413291fa11fdc07fac77b6f97d50478c9e201",
+					"I	b5f9682e177cd52d7e1b02800271f0f2128ba738b58e3f8896b0bbfe925d4d72",
+					"J	6da769a89ec95b2a50f4c751eb8935e42d826fa26946a2fa0e842e332883473f",
+					"K	ac31e2cf0e381196de7e32ceeedfd1a53d67f5b926d86e37763bd00a6d825be3",
+					"L	81668bf385abcf876495cdf4280a83431787c647fa42defb82d3096517578ab3",
+					"M	7277a409abd703c9c2858834d93a18fdfce0ea0aee3a416a6bdea62a7ac73598",
+					"N	dc8b7e99c2aa1397e658fb380fe96d7fb940d18b895c2336f3284751898d48c7",
+					"O  5ad27bbec3d8fbc6ea7dc74f3cae088f2160120b4a7659ba5ed62e950301a0b6",
+					"P	3a3c88b51baddc0e9a2d1bb7888e4d44ec8901d0f5f448ca477b36e77aac8efd",
+					"Q	5ad27bbec3d8fbc6ea7dc74f3cae088f2160120b4a7659ba5ed62e950301a0b6",
+					"R	7e8cd2c0c128019fe0885cc61b5320867ec211dcd2f0986238da07598d826587",
+					"S	a56ae9754a77be068bc3d87c8bf0d8229a13bd570d4230776bfbb91c0496a022",
+					"S	048cd18997a847069d006adf86879944e1b5069ff2258e5cb3c1a37d2265b91e",
+					"T  048cd18997a847069d006adf86879944e1b5069ff2258e5cb3c1a37d2265b91e",
+					"U  cc8ae75b395d3faa3b338e19815af7d6af4ad8c5f462e1163b2fa8bae5404a54",
+					"V	a348091704377530f2b4db50cdf4287859424855aad21d99c64f8454c602698a",
+					"W	1c8d95d7f0f74fe53f6021ef9146183f19ababd049b31e0b9eb909ffcf86d6c0",
+					"X	unbelegt",
+					"Y	8bc949cd1652c68b4ff28ac9d38c5450fe6e42783428135fe65af3f230414668",
+					"Z	cc7a222db4cc330c2a5a74f8cd64157f255dcfec9272b7fe8f742d2e489aae8f"
+				]
 
-	if 	show_mark == '"showsZ"':
-		button_range = gridlist[0]
-		
-	else:
-		button_range = stringextract(show_mark, ',"shows', gridlist[0]) # bis nächsten Button
-	PLog('button_range: ' + button_range[:80])
-	
-	if ':[]' in button_range:						# leer, z.B. "showsX":[],
-		return 	ObjectContainer(header='Error', message='Keine Sendungen zu %s gefunden.' % button)						
-		
-	gridlist = blockextract(':"Teaser:', button_range)
-	PLog(len(gridlist))
-	
-	rec_per_page = 20								# Anzahl pro Seite
-	max_len = len(gridlist)	
-	gridlist = gridlist[offset:]					# Liste ab Offset verwenden
-		
-	sendername, sender, kanal, img = Dict['ARDSender'].split(':')
-	sendungen = []
-	show_mark = show_mark.replace('"', '')
-
-	cnt = int(offset); i=0							# Startzahl diese Seite
-	for grid in gridlist:							# path mit WidgetID bauen, Beitrag holen		
-		cnt = cnt + 1; i = i + 1
-		if cnt > max_len:							# Gesamtzahl überschritten?
-			break
-		if i >= rec_per_page:						# Anzahl pro Seite überschritten?
-			break
-			
-		wid = stringextract('Teaser:', '"', grid)
-		# Segmente + Links identisch mit json-Segmenten aus ARDStart / ARDStartRubrik 
-		href = 'http://page.ardmediathek.de/page-gateway/pages/%s/grouping/%s'  % (sender, wid)
-		try:
-			page = HTTP.Request(href).content				# i.d.R. Mehrfachseiten
-		except Exception as exception:
-			PLog(str(Exception))
-			continue
-															# nur 1 Satz auswerten	
-		title 	= stringextract('"synopsis"', '"pagination', page)	
-		title 	= stringextract('title":"', '"', title)
-		if title == '':												
-			title 	= stringextract('alt":"', '"', page)	# Bildbeschr.	
-		title 	= title.decode(encoding="utf-8")
-		img 	= stringextract('src":"', '"', page)	
-		img 	= img.replace('{width}', '640')
-		summ 	= stringextract('synopsis":"', '"', page)	
-		summ 	= summ.decode(encoding="utf-8")
-		prod 	= stringextract('producerName":"', '"', page)# 	
-		if prod:
-			summ = "%s | %s" % (summ, prod)
-		
-		PLog("%d von %d" % (cnt, max_len)); PLog(title); PLog(href);	
-		oc.add(DirectoryObject(key=Callback(ARDStartRubrik, path=href, title=title), 
-			title=title,  summary=summ, thumb=img))			
-
-	if (int(cnt) +1) < int(max_len): 						# Gesamtzahl noch nicht ereicht?
-		new_offset = cnt-1
-		PLog(new_offset)
-		summ = 'Mehr (insgesamt ' + str(max_len) + ' Beiträge)'
-		summ = summ.decode(encoding="utf-8", errors="ignore")
-		oc.add(DirectoryObject(key=Callback(SendungenAZ_ARDnew, title=title, button=button, 
-			offset=new_offset), title='Mehr',  summary=summ, thumb=R(ICON_MEHR)))
-
-	return oc
-#---------------------------------------------------------------------------------------------------
-@route(PREFIX + '/ARDnew_Sendungen')	
-def ARDnew_Sendungen(title, path, img): 	# Seite mit mehreren Sendungen
-	PLog('ARDnew_Sendungen:'); 
-	title = title.decode(encoding="utf-8")		
 	oc = ObjectContainer(view_group="InfoList", title2=title, art = ObjectContainer.art)
 	oc = home(cont=oc, ID='ARD')							# Home-Button
-	page, msg = get_page(path)					
+
+	sendername, sender, kanal, img = Dict['ARDSender'].split(':')
+	PLog(sender)	
+	
+	myhash = ''
+	for Hash in sha256Hashes_AZ:
+		b, myhash = Hash.split()
+		PLog(b); PLog(myhash)
+		if b == button:
+			break
+
+	url_api	= get_api_call('SendungenAZ_ARDnew', 'ard', myhash) # ard: A-Z für alle laden, später filtern
+	page, msg = get_page(url_api, cTimeout=0)					
 	if page == '':	
-		return 	ObjectContainer(header='Error', message=msg)						
+		return 	Objget_api_callectContainer(header='Error', message=msg)						
+	page = page.replace('\\"', '*')							# quotiere Marks entf.
+	# Core.storage.save('/tmp/x.html', page)				# Debug
 	
-	sendungen = blockextract('class="teaser broadcast"', page)
-	if len(sendungen) == 0:	
-		msg = 'keine Inhalte gefunden - Abbruch' 
+	if page.startswith('{"errors":'):						# Seite Alle kann Fehler liefern, obwohl die
+		msg = stringextract('message":"', '"', page)		# 	A-Z-Seite des Senders Daten enthält
+		msg = "ARD Server-Error: %s" % msg
 		PLog(msg)
-		return 	ObjectContainer(header='Info', message=msg)	
-		
-	CB = 'ARDStartSingle'
-	oc = ARDnew_Content(oc=oc, Blocklist=sendungen, CB=CB, page=page)
-	
+	gridlist = blockextract( '"mediumTitle":', page) 		# Beiträge?
+	PLog('gridlist: ' + str(len(gridlist)))			
+	if len(gridlist) == 0:				
+		msg = 'keine Beiträge zu %s gefunden, starte Fallback'.decode(encoding="utf-8")  % title
+		PLog(msg)			
+		page, msg = get_page(url_api_org, cTimeout=0)			# Fallback: grouping-Links aus SendungenAZ
+		links = stringextract('"shows%s"' % button, 'hows', page) # 'hows' schließt auch Z bei "ShowsPage"ab
+		glinks = blockextract('"id":',  links)
+		if len(glinks) == 0:
+			msg = 'Keine Beiträge gefunden zu %s' % button		# auch Fallback gescheitert
+			return 	ObjectContainer(header='Error', message=msg)
+		i=0
+		for glink in glinks:									# Fallback-Listing
+			i=i+1
+			targetID = stringextract('id":"', '"', glink)
+			href = href = 'http://page.ardmediathek.de/page-gateway/pages/%s/grouping/%s'  % (sender, targetID)			
+			PLog(glink); PLog(href);
+			label 	= '%s. Gruppe Beiträge zu %s' % ( str(i), button)
+			label 	= label.decode(encoding="utf-8")	
+			summ 	= 'Gezeigt wird der Inhalt für %s' % sendername
+			summ 	= summ.decode(encoding="utf-8")
+			tag	 	= 'lokale Beiträge (keine auf Alle-Seite gefunden)'.decode(encoding="utf-8")
+			# Kennzeichnung ID='A-Z' für ARDStartRubrik,
+			oc.add(DirectoryObject(key=Callback(ARDStartRubrik, path=href, title=title, ID='A-Z'), 
+				title=label,  summary=summ, tagline=tag, thumb=R(ICON_ARD_AZ)))				
+		return oc													# Ende Fallback	
+			
+	# ab hier normale Auswertung	
+	for s  in gridlist:
+		targetID= stringextract('target":{"id":"', '"', s)	 	# targetID
+		PLog(targetID)
+		if targetID == '':													# keine Video
+			continue
+		groupingID= stringextract('/ard/grouping/', '"', s)	# leer bei Beiträgen von A-Z-Seiten
+		if groupingID != '':
+			targetID = groupingID
+		href = 'http://page.ardmediathek.de/page-gateway/pages/%s/grouping/%s'  % (sender, targetID)
+
+		title 	= stringextract('"longTitle":"', '"', s)
+		if title == '':
+			title 	= stringextract('"title":"', '"', s)
+		title 	= title.replace('- Standbild', '')	
+		title	= unescape(title)
+		title 	= title.decode(encoding="utf-8")
+		img 	= stringextract('src":"', '"', s)	
+		img 	= img.replace('{width}', '640')
+		summ 	= stringextract('synopsis":"', '"', s)	
+		summ 	= summ.decode(encoding="utf-8")
+		pubServ = stringextract('"name":"', '"', s)		# publicationService (Sender)
+		tagline = "Sender: %s" % pubServ		
+		pubServ = pubServ.replace(' ', '')				# Blanks entfernen, z.B. 'Das Erste'
+		PLog(sender); PLog(pubServ)
+		if sender != 'ard':								# Alle (ard) oder filtern
+			if sender not in pubServ.lower():
+				continue
+
+		PLog('Satz:');
+		PLog(title); PLog(href); PLog(img); PLog(summ); PLog(tagline);
+		oc.add(DirectoryObject(key=Callback(ARDStartRubrik, path=href, title=title), 
+			title=title,  summary=summ, tagline=tagline, thumb=img))		
+
+	PLog(len(oc))
 	return oc
 
 #---------------------------------------------------------------------------------------------------
@@ -1079,6 +1135,7 @@ def get_playlist_img(hrefsender):
 #---------------------------------------------------------------------------------------------------
 
 ####################################################################################################
+# s.u. ab ARD-neu
 @route(PREFIX + '/SendungenAZ')
 # 	Auflistung 0-9 (1 Eintrag), A-Z (einzeln) 
 #	ID = PODCAST, ARD
@@ -1094,41 +1151,80 @@ def SendungenAZ(name, ID):
 	oc = home(cont=oc, ID=ID)							# Home-Button
 		
 	azlist = list(string.ascii_uppercase)				# A - Z
-	if ID == 'ARD':						# ARD-neu
-		azlist.insert(0,'#')							# früher 0-9
-	else:
+	if ID == 'PODCAST':					# PODCAST getrennt behandeln
 		azlist.append('0-9')						# PODCAST
 		next_cbKey = 'PageControl'		# SinglePage zeigt die Sendereihen, PageControl 
 										#	 dann die weiteren Seiten
-	
+		for button in azlist:	
+			# PLog(button)
+			title = "Sendungen mit " + button
+			#if button in inactive_char:	
+			#	continue
+			azPath = POD_AZ + button
+			mode = 'Sendereihen'
+			oc.add(DirectoryObject(key=Callback(SinglePage, title=title, path=azPath, next_cbKey=next_cbKey, 
+				mode=mode, ID=ID), title=title,  thumb=R(ICON_ARD_AZ)))
+		PLog(len(oc))
+		return oc
+		
+										# ab hier ARD-neu
 	# in den vergangenen Monaten mehrfache Änderungen durch die ARD.
 	# Stand März 2019:
 	#	Scroll-Mechanismus für die Startseite A-Z (java-script-gesteuert). 
 	#	Die Plugin-Lösung ähnelt der Lösung für die Startseite. Bei Wahl eines Buttons 
 	#	werden die Links für die relevanten Beiträgen im json-Teil der html-Seite A-Z
-	#	ermittelt und einzeln abgerufen (s. SendungenAZ_ARDnew).
-	#	Der frühere Abgleich Button/Beitragstitel in SendungenAZ_ARDnew entfällt.												
+	#	ermittelt und einzeln in Schleife abgerufen (Begrenzung auf 20 Seiten wg. der 
+	#	langen Ladezeit).
+	# Stand April 2019:
+	#	Wegen der langen Ladezeit der einzelnen Beiträge Verwendung eines api-Calls
+	#	und sha256Hashes (beides undokum.) - diese liefern die Leitseiten für einz.
+	#	Buttons - s. SendungenAZ_ARDnew (Alle laden, nach Sender filtern).
+	#	Vorher laden wir hier mit api-Call die A-Z-Leitseite für den gewählten Sender
+	#	und ermitteln die unbelegten Buttons. Diese A-Z-Leitseite enthält keine Beiträge,
+	#	sondern die grouping-Links. 
+	#	Die grouping-Links werden in SendungenAZ_ARDnew bei Fehlschlag als Fallback 
+	#	verwendet - dazu wird die url_api übergeben.
+			
+	myhash = 'fdbab76da7d6aeb1ae859e1758dd1db068824dbf1623c02bc4c5f61facb474c2' # A-Z-Leitseite
+	url_api	= get_api_call('SendungenAZ', sender, myhash)
+
+	page, msg = get_page(url_api, cTimeout=0)					
+	if page == '':	
+		return 	ObjectContainer(header='Error', message=msg)						
+																
+	azlist.insert(0,'#')							# früher 0-9	
 	for button in azlist:	
 		# PLog(button)
 		title = "Sendungen mit " + button
 		#if button in inactive_char:	
 		#	continue
-		if ID == 'PODCAST':
-			azPath = POD_AZ + button
-			mode = 'Sendereihen'
-			oc.add(DirectoryObject(key=Callback(SinglePage, title=title, path=azPath, next_cbKey=next_cbKey, 
-				mode=mode, ID=ID), title=title,  thumb=R(ICON_ARD_AZ)))
+		button 	= button.replace('#','09')
+		show 	= 'shows%s":[]' % button			# Leerbutton
+		if show in page:
+			title = "keine Inhalte zu %s" % button
+			summ = sendername
+			oc.add(DirectoryObject(key=Callback(SendungenAZ, name='Sendungen A-Z', ID='ARD'), 
+				title=title, summary=summ, thumb=R(ICON_ARD_AZ)))
 		else:
-			button = button.replace('#','09')
-			# path = BETA_BASE_URL + "/%s/shows#shows%s" % (sender, button) # entfällt
 			summ = 'Gezeigt wird der Inhalt für %s' % sendername
 			summ = summ.decode(encoding="utf-8")
-			oc.add(DirectoryObject(key=Callback(SendungenAZ_ARDnew, title=title, button=button), 
-				title=title,  summary=summ, thumb=R(ICON_ARD_AZ)))
+			oc.add(DirectoryObject(key=Callback(SendungenAZ_ARDnew, title=title, button=button, 
+				api_call=url_api), title=title,  summary=summ, thumb=R(ICON_ARD_AZ)))
 										
 	PLog(len(oc))
 	return oc
 #-----------------------
+# get_api_call erstellt API-Call für ARD A-Z-Seiten
+def get_api_call(function, sender, myhash):
+
+	url_api 	= 'https://api.ardmediathek.de/public-gateway'
+	variables 	= '{"client":"%s"}'	% sender
+	extensions	= '{"persistedQuery":{"version":1,"sha256Hash":"%s"}}' % myhash
+	variables =  urllib.quote_plus(variables)                   # & nicht codieren!
+	extensions =  urllib.quote_plus(extensions)                	# & nicht codieren!
+	url_api 	= "%s?variables=%s&extensions=%s"  % (url_api, variables, extensions)
+	PLog('url_api_%s: %s' % (function, url_api))
+	return url_api
 
 ####################################################################################################
 @route(PREFIX + '/Search')	# Suche - Verarbeitung der Eingabe
@@ -1187,7 +1283,7 @@ def Search(query=None, title=L('Search'), channel='ARD', s_type=None, offset=0, 
 #	S.a. loadPage in Modul zdfmobile.
 #	urllib2=True überspringt die HTTP.Request-Variante (erf. falls path # enthält - z.B ARD-A-Z)
 def get_page(path, cTimeout=None, use_lib2=False):		# holt kontrolliert raw-Content, cTimeout für cacheTime
-	PLog('get_page');
+	PLog('get_page:'); PLog('cTimeout:' + str(cTimeout)); PLog('use_lib2:' + str(use_lib2))
 	msg = ''; page = ''
 	UrlopenTimeout = 10
 		
@@ -1206,6 +1302,11 @@ def get_page(path, cTimeout=None, use_lib2=False):		# holt kontrolliert raw-Cont
 		PLog('urllib2.Request: ' + path)
 		try:
 			req = urllib2.Request(path)									# 2. Versuch urllib2.Request 
+			req.add_header('User-Agent', 'Chrome/72.0.3626.96, Safari/537.36')
+			req.add_header('Accept', 'text/html,application/xhtml xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8')
+			req.add_header('Accept-Encoding','gzip, deflate, br')
+			req.add_header('cache-control', 'max-age=0')
+			
 			gcontext = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
 			gcontext.check_hostname = False
 			r = urllib2.urlopen(req, context=gcontext, timeout=UrlopenTimeout)
@@ -1611,7 +1712,10 @@ def SinglePage(title, path, next_cbKey, mode, ID, offset=0):	# path komplett
 	if mode == 'Sendereihen':	
 		if ID == 'PODCAST':						       # auch A-Z 
 			# Filter nach next_cbKey (PageControl, 	SinglePage, SingleSendung) hier nicht erforderlich	
-			page = stringextract('class=\"section onlyWithJs sectionA\">', '<!-- content -->', page)
+			page = stringextract('class="section onlyWithJs sectionA">', '<!-- content -->', page)
+			if page == '':
+				msg = 'keine Inhalte gefunden zu: %s' % title
+				return 	ObjectContainer(header='Error', message=msg)									
 		else:
 			page = stringextract('data-ctrl-layoutable', '<!-- **** END **** -->', page)	
 	sendungen = blockextract('class="teaser"', page)	# Sendungsblöcke in PODCAST: 1. teaser=Sendungskopf, 
@@ -3711,16 +3815,16 @@ def ZDFSendungenAZ(name):
 
 	# Menü A to Z
 	for element in azlist:
-		oc.add(DirectoryObject(key=Callback(SendungenAZList, title=title, element=element), 
+		oc.add(DirectoryObject(key=Callback(SendungenAZListZDF, title=title, element=element), 
 			title='Sendungen mit ' + element, thumb=R(ICON_ZDF_AZ)))
 
 	return oc
 
 ####################################################################################################
 # Seite A-Z für ZDF
-@route(PREFIX + '/SendungenAZList')
-def SendungenAZList(title, element, offset=0):	# Sendungen zm gewählten Buchstaben
-	PLog('SendungenAZList')
+@route(PREFIX + '/SendungenAZListZDF')
+def SendungenAZListZDF(title, element, offset=0):	# Sendungen zm gewählten Buchstaben
+	PLog('SendungenAZListZDF')
 	title2='Sendungen mit ' + element
 	oc = ObjectContainer(title2=title2, view_group="List")
 	oc = home(cont=oc, ID='ZDF')							# Home-Button
@@ -3740,7 +3844,7 @@ def SendungenAZList(title, element, offset=0):	# Sendungen zm gewählten Buchsta
 	summ_mehr = 'Mehr zu >%s<, Gesamt: %s' % (title2, page_cnt)
 	if offset:
 		summ_mehr = summ_mehr.decode(encoding="utf-8", errors="ignore")
-		oc.add(DirectoryObject(key=Callback(SendungenAZList, title=title, element=element, offset=offset), 
+		oc.add(DirectoryObject(key=Callback(SendungenAZListZDF, title=title, element=element, offset=offset), 
 			title='Mehr...', summary=summ_mehr,  thumb=R(ICON_MEHR)))	
 
 	return oc
