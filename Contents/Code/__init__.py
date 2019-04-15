@@ -23,8 +23,8 @@ import EPG
 
 # +++++ ARDundZDF - Plugin für den Plexmediaserver +++++
 
-VERSION =  '0.4.2'		 
-VDATE = '06.04.2019'
+VERSION =  '0.4.3'		 
+VDATE = '15.04.2019'
 
 # 
 #	
@@ -705,6 +705,12 @@ def ARDStartRubrik(path, title, widgetID='', ID=''):
 			if groupingID != '':
 				targetID = groupingID
 			href = 'http://page.ardmediathek.de/page-gateway/pages/%s/grouping/%s'  % (sender, targetID)
+			if '/compilation/' in s:							# Bsp.: Filme nach Rubriken - keine grouping-Url
+				hreflist = blockextract('"href":"', s)
+				for h in hreflist:
+					if '/compilation/' in h:
+						href = stringextract('"href":"', '"', h)
+						break
 		
 		if ID == 'A-Z' and title_pre:							# Button-relevanter Titel
 			title 	= title_pre + ' | ' + stringextract('"title":"', '"', s)

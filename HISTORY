@@ -3,6 +3,10 @@ CHANGE HISTORY 	ARDundZDF - inoffizielles Plugin für den Plexmediaserver
 --------------		Nachfolger von Plex-Plugin-ARDMediathek2016
 --------------	
 	
+	
+15.04.2019	0.4.3	ARDStartRubrik: Auswertung für compilation-Url hinzugefügt (erforderlich 
+			für Filme nach Rubriken).
+		
 06.04.2019	0.4.2	SendungenAZ: Laden der A-Z-Leitseite für gewählten Sender via api-Call, 
 			Ermittlung und Kennzeichnung der beitraglosen Buttons.
 			SendungenAZ: Umstellung Podcast / ARD-Inhalte
