@@ -23,7 +23,7 @@ import EPG
 
 # +++++ ARDundZDF - Plugin für den Plexmediaserver +++++
 
-VERSION =  '0.4.3'		 
+VERSION =  '0.4.4'		 
 VDATE = '15.04.2019'
 
 # 
@@ -3778,7 +3778,7 @@ def ZDF_Search(query=None, title=L('Search'), s_type=None, pagenr='', **kwargs):
 	path = ZDF_Search_PATH % (query, pagenr)
 	PLog(pagenr); PLog(path)
 	page = HTTP.Request(path, cacheTime=1).content
-	content =  blockextract('class="artdirect"', page)
+	content =  blockextract('class="artdirect " >', page)
 	if len(content) > 0:
 		title = "Weitere Beiträge".decode(encoding="utf-8", errors="ignore")
 		oc.add(DirectoryObject(key=Callback(ZDF_Search, query=query, s_type=s_type, pagenr=pagenr), 
@@ -4092,7 +4092,7 @@ def ZDF_get_content(oc, page, ref_path, offset=0, ID=None):
 	page_title = stringextract('<title>', '</title>', page)  # Seitentitel
 	page_title = page_title.strip()
 	msg_notfound = ''
-	if 'Leider kein Video verfügbar' in page:				# Verfügbarkeit vor class="artdirect"
+	if 'Leider kein Video verfügbar' in page:				# Verfügbarkeit vor class="artdirect " >
 		msg_notfound = 'Leider kein Video verfügbar'		# z.B. Ausblick auf Sendung
 		if page_title:
 			msg_notfound = 'Leider kein Video verfügbar zu: ' + page_title
@@ -4102,7 +4102,7 @@ def ZDF_get_content(oc, page, ref_path, offset=0, ID=None):
 	if pos >= 0:
 		page = page[pos:]
 				
-	content =  blockextract('class="artdirect"', page)
+	content =  blockextract('class="artdirect " >', page)
 	if ID == 'NeuInMediathek':									# letztes Element entfernen (Verweis Sendung verpasst)
 		content.pop()	
 	page_cnt = len(content)

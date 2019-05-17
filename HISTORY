@@ -4,6 +4,11 @@ CHANGE HISTORY 	ARDundZDF - inoffizielles Plugin für den Plexmediaserver
 --------------	
 	
 	
+17.05.2019 	0.4.4	ZDF (ZDF_Sendungen, ZDF_get_content, ZDF_Search): Anpassung nach Änderung der 
+			Webseite (Blockbildung via 'class="artdirect " >' statt 'class="artdirect">').
+			TV-Livesender: Aktualisierung Streamlinks, n-tv + DAF entfernt, Livestream
+			ARDSportschau eingefügt (einschl. Bild). 
+		
 15.04.2019	0.4.3	ARDStartRubrik: Auswertung für compilation-Url hinzugefügt (erforderlich 
 			für Filme nach Rubriken).
 		
