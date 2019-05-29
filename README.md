@@ -4,7 +4,7 @@ Plugin für den Plexmediaserver
 mit Inhalten der Mediatheken von ARD und ZDF, 
 einschließlich Live-TV mit Aufnahmefunktion, Live-Radio, Podcasts
 
-#### 29.05.2019 ab Plexmediaserver-Version 1.15.6.1079 ist auch mit dem Webclient die Unterstützung für Plugins weggefallen (für andere Clients bereits früher).  Es existiert eine ältere noch funktionierende Lösung: https://forums.plex.tv/t/rel-ardundzdf/309751/19
+#### 29.05.2019 ab Plexmediaserver-Version 1.15.6.1079 ist auch im Webclient die Unterstützung für Plugins weggefallen (für andere Clients bereits früher).  Es existiert eine ältere noch funktionierende Lösung: https://forums.plex.tv/t/rel-ardundzdf/309751/19
 
 Für die ZDF Mediathek kann wahlweise die kompakte Version ZDFmobile genutzt werden. 
 
