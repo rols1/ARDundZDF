@@ -6,6 +6,10 @@ einschließlich Live-TV mit Aufnahmefunktion, Live-Radio, Podcasts
 
 #### 29.05.2019 ab Plexmediaserver-Version 1.15.6.1079 ist auch im Webclient die Unterstützung für Plugins weggefallen (für andere Clients bereits früher).  Es existiert eine ältere noch funktionierende Lösung: https://forums.plex.tv/t/rel-ardundzdf/309751/19
 
+#### 30.05.2019 bitte den ARD-Hinweis zur Abschaltung beachten. Nach der Abschaltung wird der Classic-Code entfernt und durch das Modul ARD-Neu ersetzt.
+![Abschaltung ](https://aws1.discourse-cdn.com/plex/optimized/3X/4/d/4d01bb24fae46529c0ec120ec35479278022416d_2_690x327.png)
+
+
 Für die ZDF Mediathek kann wahlweise die kompakte Version ZDFmobile genutzt werden. 
 
 Download aktuelle Version: https://github.com/rols1/ARDundZDF/releases/latest
