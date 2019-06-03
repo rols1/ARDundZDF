@@ -2,7 +2,21 @@ CHANGE HISTORY 	ARDundZDF - inoffizielles Plugin für den Plexmediaserver
 --------------		Releases: https://github.com/rols1/ARDundZDF/releases/latest
 --------------		Nachfolger von Plex-Plugin-ARDMediathek2016
 --------------	
+
+
+03.06.2019 	0.4.7	ARDStartSingle: erweitert um Auswertung  zusätzl. Videos zur Sendung.
+			ARDStartSingle: Fix duration (if None).
+
+not on github 	0.4.6	Vauclabs - Neue Funktionen ARDVerpasst + ARDVerpasstContent.
+			ARDVerpasstContent: Erweiterung um Senderliste, falls "Alle" 
+			voreingestellt.
+			ARD-Podcasts: Umstellung Links http -> https.
 	
+not on github 	0.4.5	Vorbereitung auf Classic-Abschaltung (Vauclabs):
+			Neue Funktion ARDSearchnew: Ermittlung api-Call, Listing Beiträge,
+			Mehr-Button.
+			get_api_call: Call-Zusammensetzung für ARDSearchnew und Einzelbeitrag 
+			(statt player-Url) erweitert. 	
 	
 17.05.2019 	0.4.4	ZDF (ZDF_Sendungen, ZDF_get_content, ZDF_Search): Anpassung nach Änderung der 
 			Webseite (Blockbildung via 'class="artdirect " >' statt 'class="artdirect">').
