@@ -28,20 +28,12 @@ direkt: rols1@gmx.de
 Funktionen ab Version 2.2.0: 
 ===================
 
-#### ARD Mediathek:  
+#### ARD Mediathek (/www.ardmediathek.de/ard/):  
 - Suche nach Sendungen
+- Startseite - Inhalte wie Website)
 - Sendung Verpasst (Sendungen der letzten 7 Tage)
 - Sendungen A-Z
-- Filme
-- Dokus
-- Serien
-- Themen
-- Rubriken
-- MeistGesehen
-- Neueste Videos
-- am besten bewertet
 - Barrierearm (Hörfassung)
-- Bilderserien
 
 #### ZDF Mediathek: 
 - Suche nach Sendungen
