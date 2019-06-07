@@ -25,7 +25,7 @@ Addon für Kodi / XBMC: [Quelle](https://github.com/rols1/Kodi-Addon-ARDundZDF),
 Im Forum: https://forums.plex.tv/t/rel-ardundzdf/309751
 direkt: rols1@gmx.de 
   
-Funktionen ab Version 2.2.0: 
+Funktionen: 
 ===================
 
 #### ARD Mediathek (/www.ardmediathek.de/ard/):  
