@@ -3,8 +3,13 @@ CHANGE HISTORY 	ARDundZDF - inoffizielles Plugin für den Plexmediaserver
 --------------		Nachfolger von Plex-Plugin-ARDMediathek2016
 --------------	
 
+06.06.2019 	0.4.8	ARD - Auswertung ARD-Konzept AutoCompilationWidget (Rubriken der Startseite):
+			neue Funktionen ARDCompilation + get_comp_content (Seite), get_compilation
+			(Compilation-Parameter).
+			VerpasstWoche: Code entfernt, Mitnutzung ZDF-Aufruf in ARDVerpasst via ID.
 
-03.06.2019 	0.4.7	ARDStartSingle: erweitert um Auswertung  zusätzl. Videos zur Sendung.
+not on github 	0.4.7	ARDStartSingle: erweitert um Auswertung zusätzlicher Videos zur Sendung
+			(Kennz.: "Mehr zur Sendung").
 			ARDStartSingle: Fix duration (if None).
 
 not on github 	0.4.6	Vauclabs - Neue Funktionen ARDVerpasst + ARDVerpasstContent.

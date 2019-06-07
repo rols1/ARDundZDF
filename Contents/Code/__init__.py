@@ -23,8 +23,8 @@ import EPG
 
 # +++++ ARDundZDF - Plugin für den Plexmediaserver +++++
 
-VERSION =  '0.4.7'		 
-VDATE = '03.06.2019'
+VERSION =  '0.4.8'		 
+VDATE = '06.06.2019'
 
 # 
 #	
@@ -328,7 +328,7 @@ def Main_ARD(name, sender=''):
 	#	title=title, summary=summ, thumb=R(ICON_ARD_VERP)))
 	# VerpasstWoche: ARD-Neu
 	title = 'Sendung verpasst (1 Woche)'
-	oc.add(DirectoryObject(key=Callback(ARDVerpasst, title='Sendung verpasst'), 
+	oc.add(DirectoryObject(key=Callback(ARDVerpasst, title='Sendung verpasst', ID='ARD'), 
 		title=title, summary=summ, thumb=R(ICON_ARD_VERP)))
 	
 	# SendungenAZ: PODCAST + ARD-Neu
@@ -369,7 +369,7 @@ def Main_ZDF(name):
 	oc.add(InputDirectoryObject(key=Callback(ZDF_Search, s_type='video', title=u'%s' % L('Search Video')),
 		title=u'%s' % L('Search'), prompt=u'%s' % L('Search Video'), thumb=R(ICON_ZDF_SEARCH)))
 		
-	oc.add(DirectoryObject(key=Callback(VerpasstWoche, name=name, title='Sendung verpasst'), 
+	oc.add(DirectoryObject(key=Callback(ARDVerpasst, title='Sendung verpasst', ID='ZDF'), 
 		title="Sendung verpasst (1 Woche)", thumb=R(ICON_ZDF_VERP)))
 		
 	oc.add(DirectoryObject(key=Callback(ZDFSendungenAZ, name="Sendungen A-Z"), title="Sendungen A-Z",
@@ -645,6 +645,8 @@ def img_via_id(href_id, page):
 def ARDStartRubrik(path, title, widgetID='', ID=''): 
 	PLog('ARDStartRubrik: %s' % ID); PLog(title); PLog(path)	
 	title 		= title.decode(encoding="utf-8")
+	title_org 	= title
+	path_org	= path
 			
 	sendername, sender, kanal, img = Dict['ARDSender'].split(':')
 	PLog(sender)	
@@ -766,7 +768,8 @@ def ARDStartRubrik(path, title, widgetID='', ID=''):
 			playlist_img = get_playlist_img(sender) # Icon aus livesenderTV.xml holen
 			if playlist_img:
 				img = playlist_img
-			
+		
+		duration = duration.decode(encoding="utf-8")
 		PLog('Satz:');
 		PLog(mehrfach); PLog(title); PLog(href); PLog(img); PLog(summ);
 		if mehrfach:
@@ -775,8 +778,137 @@ def ARDStartRubrik(path, title, widgetID='', ID=''):
 		else:
 			oc.add(DirectoryObject(key=Callback(ARDStartSingle, path=href, title=title, 
 				duration=duration, ID=ID), title=title,  summary=summ, tagline=duration, thumb=img))
-			
+	
+	if 	'AutoCompilationWidget'	in page:				# z.B. Scroll-Beiträge zu Rubriken
+		title = "Mehr zu >%s<" % title_org				# Mehr-Button	 
+		pageNumber, pageSize, totalElements, next_path = get_compilation(page)	# Basis 0
+		# summ = "insgesamt: %s Beiträge" % totalElements # stimmt nicht mit Anz. Videos überein
+		# summ = summ.decode(encoding="utf-8")
+		tag = "zu Seite 2 " 
+		if (len(oc)-1) < int(totalElements):	
+			oc.add(DirectoryObject(key=Callback(ARDCompilation, title=title_org, path=next_path,
+				pageNumber=pageNumber, pageSize=pageSize), title=title,  
+				tagline=tag, thumb=R(ICON_MEHR)))
+		
 	PLog(len(oc))
+	return oc
+#---------------------------------------------------------------------------------------------------
+# ermittelt aus page die Parameter für AutoCompilationWidget (z.B. weitere Seiten für Rubriken)
+#	pageNumber, pageSize, totalElements: Basis 0
+def get_compilation(page):
+	PLog("get_compilation:")
+	
+	widget 	= stringextract('AutoCompilationWidget', '"type"', page)
+	widgetID= stringextract('Widget:', '"', widget)
+	pageNumber 	= stringextract('pageNumber":', ',"', widget)
+	pageSize 	= stringextract('pageSize":', ',"', widget)
+	totalElements 	= stringextract('totalElements":', '},', widget)
+	href	=  "http://page.ardmediathek.de/page-gateway/widgets/ard/compilation"
+	next_path = ''
+	if int(pageNumber) + 1 <= int(pageSize):
+		pN = int(pageNumber) + 1
+		next_path = "%s/%s?pageNumber=%d&pageSize=%s" % (href, widgetID, pN, pageSize)
+	PLog(widget);PLog(widgetID);PLog(pageNumber);PLog(pageSize);PLog(totalElements);
+	PLog(next_path)	
+	
+	return pageNumber, pageSize, totalElements, next_path
+#---------------------------------------------------------------------------------------------------
+@route(PREFIX + '/ARDCompilation')	
+# 1. Aufrufer: ARDStartRubrik mit pageNumber='1' - Seite 0 bereits ausgewertet
+#	dann rekursiv (Mehr-Button) mit den ermittelten Werten pageNumber + pageSize
+# Neuer Pfad wird hier mit den ermittelten Werten pageNumber + pageSize zusammengesetzt, Bsp.: 
+#	http://page.ardmediathek.de/page-gateway/widgets/ard/compilation/3lCyQCGpIIkaos2EQqIu6q?pageNumber=0&pageSize=24
+# Alternative: api-Call via get_api_call (für compilationId vorbereitet,
+#	 myhash=0aa6f77b1d2400b94b9f92e6dbd0fabf652903ecf7c9e74d1367458d079f0810).
+def ARDCompilation(title, path, pageNumber, pageSize): 
+	PLog('ARDCompilation:')
+	PLog(path)
+	
+	title_org 	= title 
+	title 		= title.decode(encoding="utf-8")		
+	
+	oc = ObjectContainer(view_group="InfoList", title2=title, art = ObjectContainer.art)
+	oc = home(cont=oc, ID='ARD')							# Home-Button
+
+	page, msg = get_page(path)					
+	if page == '':	
+		return 	ObjectContainer(header='Error', message=msg)						
+	PLog(len(page))	
+	page = page.replace('\\"', '*')							# quotiere Marks entf.
+	
+	oc = get_comp_content(oc, page, ID='ARDCompilation')
+	
+	if 	'AutoCompilationWidget'	in page:				# z.B. Scroll-Beiträge zu Rubriken
+		title = "Mehr zu >%s<" % title_org		# Mehr-Button	 # ohne Pfad
+		pageNumber, pageSize, totalElements, next_path  = get_compilation(page)
+		
+		# Mehr-Button, falls noch nicht alle Sätze ausgegeben		
+		maxlen = (int(pageNumber) +1) * int(pageSize)		# Seitenzahl=Basis 0
+		PLog("maxlen: " + str(maxlen)); 
+		if maxlen < int(totalElements):
+			# summ = "insgesamt: %s Beiträge" % totalElements # stimmt nicht mit Anz. Videos überein
+			# summ = summ.decode(encoding="utf-8")
+			tag = "zu Seite %d " % pageNumber +2
+			oc.add(DirectoryObject(key=Callback(ARDCompilation, title=title_org, path=next_path,
+				pageNumber=pageNumber, pageSize=pageSize), title=title,  
+				tagline=tag, thumb=R(ICON_MEHR)))
+	
+	return oc
+	
+#---------------------------------------------------------------------------------------------------
+# Auswertung für ARDCompilation 
+def get_comp_content(oc, page, ID): 
+	PLog('get_comp_content: ' + ID)
+# Ausw. Muster ARDSearchnew?
+	
+	sendername, sender, kanal, img = Dict['ARDSender'].split(':') # Debug, Seite bereits senderspez.
+	PLog(sender)											#-> href
+	
+	# images + mediumTitle zu weit in Satz für gridlist
+	gridlist = blockextract( 'availableTo":', page) 		# ARDCompilation  
+	PLog('gridlist: ' + str(len(gridlist)))
+
+	for s  in gridlist:
+		targetID= stringextract('target":{"id":"', '"', s)	 	# targetID
+		PLog(targetID)
+		if targetID == '':													# keine Video
+			continue
+		href 	= 'https://www.ardmediathek.de/%s/live/%s' % (sender, targetID)
+			
+		if 'longTitle":"' in s:
+			title 	= stringextract('longTitle":"', '"', s)
+		if title == '':
+				title 	= stringextract('mediumTitle":"', '"', s)		
+	
+		img 	= stringextract('src":"', '"', s)	
+		img 	= img.replace('{width}', '640')
+		summ 	= stringextract('synopsis":"', '"', s)	
+		summ 	= summ.decode(encoding="utf-8")
+			
+		duration= stringextract('"duration":', ',', s)			# Sekunden
+		duration = seconds_translate(duration)
+		if duration :						# für Staffeln nicht geeignet
+			duration = 'Dauer %s' % duration
+		maturitytRating = stringextract('maturityContentRating":"', '"', page) # "FSK16"
+		PLog('maturitytRating: ' + maturitytRating)				# außerhalb Block!
+		if 	maturitytRating:
+			duration = "%s | %s" % (duration, maturitytRating)	
+			
+		pubServ = stringextract('"name":"', '"', s)		# publicationService (Sender)
+		if pubServ:
+			if duration:
+				duration = "%s | Sender: %s" % (duration, pubServ)
+			else:
+				duration = "Sender: %s" % (pubServ)
+
+		summ = summ.decode(encoding="utf-8"); title = title.decode(encoding="utf-8");
+		duration = duration.decode(encoding="utf-8");
+		
+		PLog('Satz:');
+		PLog(title); PLog(href); PLog(img); PLog(summ); PLog(duration);
+		oc.add(DirectoryObject(key=Callback(ARDStartSingle, path=href, title=title, 
+			duration=duration, ID=ID), title=title,  summary=summ, tagline=duration, thumb=img))
+	
 	return oc
 #---------------------------------------------------------------------------------------------------
 @route(PREFIX + '/ARDStartSingle')	
@@ -1141,7 +1273,8 @@ def SendungenAZ_ARDnew(title, button, api_call):
 				title=label,  summary=summ, tagline=tag, thumb=R(ICON_ARD_AZ)))				
 		return oc													# Ende Fallback	
 			
-	# ab hier normale Auswertung	
+	# ab hier normale Auswertung - href + Ziel (ARDStartRubrik) nicht identisch mit 
+	#	Auswertung in get_comp_content	
 	for s  in gridlist:
 		targetID= stringextract('target":{"id":"', '"', s)	 	# targetID
 		PLog(targetID)
@@ -1284,7 +1417,8 @@ def SendungenAZ(name, ID):
 #-----------------------
 # get_api_call erstellt API-Call für ARD A-Z-Seiten
 #	Werte pageNumber, version als json-int einfügen.
-def get_api_call(function, sender, myhash, pageNumber='', text='', clipId='', deviceType=''):
+def get_api_call(function, sender, myhash, pageNumber='', text='', clipId='', deviceType='',\
+	compilationId=''):
 
 	url_api 	= 'https://api.ardmediathek.de/public-gateway'
 	variables 	= '{"client":"%s"}'	% sender
@@ -1292,10 +1426,12 @@ def get_api_call(function, sender, myhash, pageNumber='', text='', clipId='', de
 	if pageNumber and text:										# ARDSearchnew
 		variables = '{"client":"%s","pageNumber":%s,"text":"%s"}'	% (sender, str(pageNumber), text)
 		
+	if compilationId:											# Rubrikenbeiträge
+		variables = '{"client":"%s", "compilationId":"%s","deviceType":"%s"}'	% (sender, compilationId)
+		
 	if clipId and deviceType:									# Einzelbeitrag (statt player-Url)
 		variables = '{"client":"%s", "clipId":"%s","deviceType":"%s"}'	% (sender, clipId, deviceType)
 		
-	
 	extensions	= '{"persistedQuery":{"version":1,"sha256Hash":"%s"}}' % myhash
 	variables =  urllib.quote_plus(variables)                   # & nicht codieren!
 	extensions =  urllib.quote_plus(extensions)                	# & nicht codieren!
@@ -1305,7 +1441,8 @@ def get_api_call(function, sender, myhash, pageNumber='', text='', clipId='', de
 
 ####################################################################################################
 @route(PREFIX + '/Search')	# Suche - Verarbeitung der Eingabe
-	# Wegen aktuellerer Suchergebnisse wird die Classic-Version verwendet.
+	# ARD-Seawrch s. ARDSearchnew
+	# 06.06.2019 z.Z. nur noch für Podcast verwendet.
 	# Vorgabe UND-Verknüpfung (auch Podcast)
 	# offset: verwendet nur bei Bilderserien (Funktionen s. ARD_Bildgalerie.py)
 def Search(query=None, title=L('Search'), channel='ARD', s_type=None, offset=0, path=None, **kwargs):
@@ -1313,6 +1450,7 @@ def Search(query=None, title=L('Search'), channel='ARD', s_type=None, offset=0, 
 	query = query.replace(' ', '+')			# Leer-Trennung = UND-Verknüpfung bei Podcast-Suche 
 	query = urllib2.quote(query, "utf-8")
 	PLog(query)
+	# Switch
 
 	name = 'Suchergebnis zu: ' + urllib2.unquote(query)
 	name = name.decode(encoding="utf-8", errors="ignore")
@@ -1380,6 +1518,7 @@ def ARDSearchnew(query=None, title=L('Search'), offset=0, path=None):
 	myhash = 'ebd79f9a91c559ec31363f2b6448fb489ddf4742c1ca911d3c16391e72d6bb18'  # Chrome-Dev.-Tools
 	url_api	= get_api_call('ARDSearchnew', 'ard', myhash, pageNumber, text=query) 
 	page, msg = get_page(url_api, cTimeout=0)	
+	PLog(len(page))
 	
 	if page == '':	
 		return 	ObjectContainer(header='Error', message=msg)						
@@ -1441,16 +1580,22 @@ def ARDSearchnew(query=None, title=L('Search'), offset=0, path=None):
 		PLog(title); PLog(href); PLog(img); PLog(summ); PLog(tagline);
 		oc.add(DirectoryObject(key=Callback(ARDStartSingle, path=href, title=title, 
 			duration=duration), title=title,  summary=summ, tagline=tagline, thumb=img))				
-	
-	title = "Mehr zu %s" % urllib2.unquote(query)		# Mehr-Button
+		
+	title = "Mehr zu >%s<" % urllib2.unquote(query)		# Mehr-Button
 	offset = int(offset) +1
-	# die Werte in vodTotal + vodPageSize stimmen nicht mit Anzal der
-	#	Beiträge überein.
-	#vodTotal	= stringextract('"vodTotal":', ',', page)
-	#vodPageSize = stringextract('"vodPageSize":', ',', page)
-	#tagline = "zu Seite %s (von %s)" % (str(offset+1), vodPageSize)	
-	oc.add(DirectoryObject(key=Callback(ARDSearchnew, query=urllib2.unquote(query), title=title, 
-		offset=str(offset)), title=title, thumb=R(ICON_MEHR)))				
+	# die Werte in vodTotal (zu groß) stimmen nicht mit Anzal der
+	#	Beiträge überein - wie ARDCompilation
+	vodTotal	= stringextract('"vodTotal":', ',', page)
+	vodPageSize = stringextract('"vodPageSize":', ',', page)	# i.d.R. 24
+	maxlen = offset * int(vodPageSize)	
+	PLog("vodTotal: %s, vodPageSize: %s" % (vodTotal, vodPageSize))
+	PLog("maxlen: " + str(maxlen)); 
+	if maxlen < int(vodTotal):
+		# summ = "insgesamt: %s Beiträge" % vodTotal # stimmt nicht mit Anz. Videos überein
+		# summ = summ.decode(encoding="utf-8")
+		tag = "zu Seite %d" % (offset + 1)
+		oc.add(DirectoryObject(key=Callback(ARDSearchnew, query=urllib2.unquote(query), title=title, 
+			offset=str(offset)), title=title, tagline=tag, thumb=R(ICON_MEHR)))				
 
 	PLog(len(oc))
 	return oc
@@ -1514,76 +1659,6 @@ def get_page(path, cTimeout=None, use_lib2=False):		# holt kontrolliert raw-Cont
 
 	return page, msg	
 
-####################################################################################################
-@route(PREFIX + '/VerpasstWoche')	# Liste der Wochentage
-	# Ablauf (ARD): 	
-	#		2. PageControl: Liste der Rubriken des gewählten Tages
-	#		3. SinglePage: Sendungen der ausgewählten Rubrik mit Bildern (mehrere Sendungen pro Rubrik möglich)
-	#		4. Parseplaylist: Auswertung m3u8-Datei (verschiedene Auflösungen)
-	#		5. CreateVideoClipObject: einzelnes Video-Objekt erzeugen mit Bild + Laufzeit + Beschreibung
-	# Funktion VerpasstWoche bisher in beta.ardmediathek nicht vorhanden, aber Senderwahl bisher via kanal 
-	#	im Pfad möglich (umstellen ab Integration Verpasst in neue Mediathek).
-	#
-	# ZDF:
-	#	Wochentag-Buttons -> ZDF_Verpasst
-	#
-def VerpasstWoche(name, title):		# Wochenliste zeigen, name: ARD, ZDF Mediathek
-	PLog('VerpasstWoche')
-	# Switch: Classic-Code entfernen
-	sendername, sender, kanal, img = Dict['ARDSender'].split(':')	
-	title_org = '%s | aktuell: %s'	% (title, sendername)
-	
-	oc = ObjectContainer(view_group="InfoList", title1=NAME, title2=title_org, art = ObjectContainer.art)
-	if name == 'ZDF Mediathek':
-		oc = home(cont=oc, ID='ZDF')						# Home-Button
-	else:	
-		oc = home(cont=oc, ID='ARD')						# Home-Button	
-		
-	wlist = range(0,7)
-	now = datetime.datetime.now()
-
-	for nr in wlist:
-		iPath = BASE_URL + ARD_VERPASST + str(nr)
-		if kanal:
-			iPath = '%s&kanal=%s' % (iPath, kanal)
-		rdate = now - datetime.timedelta(days = nr)
-		iDate = rdate.strftime("%d.%m.%Y")		# Formate s. man strftime (3)
-		zdfDate = rdate.strftime("%Y-%m-%d")		
-		iWeekday =  rdate.strftime("%A")
-		punkte = '.'
-		if nr == 0:
-			iWeekday = 'Heute'	
-		if nr == 1:
-			iWeekday = 'Gestern'	
-		iWeekday = transl_wtag(iWeekday)
-		PLog(iPath); PLog(iDate); PLog(iWeekday);
-		#title = ("%10s ..... %10s"% (iWeekday, iDate))	 # Formatierung in Plex ohne Wirkung
-		title =	"%s | %s" % (iDate, iWeekday)
-		cbKey = 'SinglePage'	# cbKey = Callback für Container in PageControl
-		if name.find('ARD') == 0 :
-			summ = 'Gezeigt wird der Inhalt für %s' % sendername
-			if kanal == '' and sendername != 'ARD-Alle': # Sender noch ohne Kanalnummer? 
-				summ = 'Gezeigt wird der Inhalt für %s - Seite für %s fehlt!' % ('ARD-Alle', sendername)
-			summ=summ.decode(encoding="utf-8", errors="ignore")
-			oc.add(DirectoryObject(key=Callback(PageControl, title=title, path=iPath, cbKey='SinglePage', 
-				mode='Verpasst', ID='ARD'), title=title, summary=summ, thumb=R(ICON_ARD_VERP)))				
-		else:
-			oc.add(DirectoryObject(key=Callback(ZDF_Verpasst, title=title, zdfDate=zdfDate),	  
-				title=title, thumb=R(ICON_ZDF_VERP)))
-						
-	return oc
-#------------
-def transl_wtag(tag):	# Wochentage engl./deutsch wg. Problemen mit locale-Setting 
-	wt_engl = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-	wt_deutsch = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"]
-	
-	wt_ret = tag
-	for i in range (len(wt_engl)):
-		el = wt_engl[i]
-		if el == tag:
-			wt_ret = wt_deutsch[i]
-			break
-	return wt_ret
 #------------
 @route(PREFIX + '/Senderwahl')	
 # 	Sender-Wahl für ARD
@@ -1615,10 +1690,11 @@ def Senderwahl(title):
 		
 ####################################################################################################
 # Verpasst Mediathek Neu - Liste Wochentage
+#	 Mitnutzung ZDF-Aufruf via ID
 #
 @route(PREFIX + '/ARDVerpasst')		# Liste der Wochentage
-def ARDVerpasst(title):
-	PLog('ARDVerpasst:');
+def ARDVerpasst(title, ID):
+	PLog('ARDVerpasst: ' + ID);
 	
 	sendername, sender, kanal, img = Dict['ARDSender'].split(':')
 	
@@ -1630,10 +1706,10 @@ def ARDVerpasst(title):
 
 	for nr in wlist:
 		rdate = now - datetime.timedelta(days = nr)
-		ardDate = rdate.strftime("%Y-%m-%d")
+		pathDate = rdate.strftime("%Y-%m-%d")
 		myDate  = rdate.strftime("%d.%m.")		# Formate s. man strftime (3)
 		# path- Bsp.: https://www.ardmediathek.de/br/program/2019-04-15	
-		path = "%s/%s/program/%s" % (BETA_BASE_URL, sender, ardDate)
+		path = "%s/%s/program/%s" % (BETA_BASE_URL, sender, pathDate)
 		
 		iWeekday = rdate.strftime("%A")
 		iWeekday = transl_wtag(iWeekday)
@@ -1644,12 +1720,28 @@ def ARDVerpasst(title):
 			iWeekday = 'GESTERN'	
 		title =	"%s %s" % (iWeekday, myDate)	# DI 09.04.
 		tagline = "Sender: %s" % sendername	
-		
 		PLog(title); PLog("path: " + path)
-		oc.add(DirectoryObject(key=Callback(ARDVerpasstContent, title=title, path=path),
-			title=title, tagline=tagline, summary='TV', thumb=R(ICON_ARD_VERP)))					 
+		if ID == 'ARD':
+			oc.add(DirectoryObject(key=Callback(ARDVerpasstContent, title=title, path=path),
+				title=title, tagline=tagline, summary='TV', thumb=R(ICON_ARD_VERP)))	
+		else:	# ZDF
+			tagline = "Sender: ZDF"
+			oc.add(DirectoryObject(key=Callback(ZDF_Verpasst, title=title, zdfDate=pathDate),	  
+				title=title, tagline=tagline, summary='TV', thumb=R(ICON_ZDF_VERP)))					 
 		
 	return oc
+#------------
+def transl_wtag(tag):	# Wochentage engl./deutsch wg. Problemen mit locale-Setting 
+	wt_engl = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+	wt_deutsch = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"]
+	
+	wt_ret = tag
+	for i in range (len(wt_engl)):
+		el = wt_engl[i]
+		if el == tag:
+			wt_ret = wt_deutsch[i]
+			break
+	return wt_ret
 
 #---------------------------------------------------------------- 
 # ARDVerpasstContent Mediathek Neu 
@@ -1885,6 +1977,7 @@ def PodFavoritenListe(title, offset=0):
 # ohne offset - ARD-Ergebnisse werden vom Sender seitenweise ausgegeben 
 def BarriereArmARD(name):		# 
 	PLog('BarriereArmARD')
+	# Switch
 	
 	title = name.decode(encoding="utf-8", errors="ignore")
 	oc = ObjectContainer(title2='ARD: ' + title, view_group="List")
