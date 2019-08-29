@@ -1,5 +1,9 @@
 ARDundZDF
 ===================
+
+#### 29.08.2019 neue Plex Client-Software unterstützt keine Plugins mehr - der Support für dieses Plugin endet hiermit.
+
+
 Plugin für den Plexmediaserver 
 mit Inhalten der Mediatheken von ARD und ZDF, 
 einschließlich Live-TV mit Aufnahmefunktion, Live-Radio, Podcasts
