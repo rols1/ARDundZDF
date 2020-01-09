@@ -1,8 +1,9 @@
 ARDundZDF
 ===================
 
-#### 29.08.2019 neue Plex Client-Software unterstützt keine Plugins mehr - der Support für dieses Plugin endet hiermit.
+#### 09.01.2020 Support ist eingestellt - Nachfolgeplugin ist [Kodi-Addon-ARDundZDF](https://github.com/rols1/Kodi-Addon-ARDundZDF/releases/latest), [Forum Kodinerds.net](https://www.kodinerds.net/index.php/Thread/64244-RELEASE-Kodi-Addon-ARDundZDF)
 
+#### 29.08.2019 neue Plex Client-Software unterstützt keine Plugins mehr.
 
 Plugin für den Plexmediaserver 
 mit Inhalten der Mediatheken von ARD und ZDF, 
